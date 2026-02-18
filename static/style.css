@@ -205,3 +205,91 @@ button:hover {
         grid-template-columns: 1fr;
     }
 }
+/* Phase 6 — Floating Security Events Panel (Top Right) */
+.security-events-floating {
+    position: absolute;
+    top: 10px;
+    right: 20px;
+    z-index: 2000;
+    text-align: right;
+}
+
+.events-button {
+    background: rgba(255, 255, 255, 0.15);
+    padding: 6px 12px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+    backdrop-filter: blur(6px);
+    display: inline-block;
+}
+
+.events-button:hover {
+    background: rgba(255, 255, 255, 0.25);
+}
+
+.security-panel {
+    margin-top: 8px;
+    width: 260px;
+    max-height: 0;
+    overflow: hidden;
+    background: rgba(0, 0, 0, 0.45);
+    border-radius: 10px;
+    backdrop-filter: blur(10px);
+    transition: max-height 0.4s ease;
+    padding: 0 10px;
+}
+
+.security-panel.open {
+    max-height: 300px;
+    padding: 10px;
+}
+
+.event-row {
+    padding: 6px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+    font-size: 0.8rem;
+}
+
+.event-row.green { color: #2ecc71; }
+.event-row.yellow { color: #f1c40f; }
+.event-row.red { color: #e74c3c; }
+
+.event-time { margin-right: 6px; }
+.event-type { margin-right: 6px; font-weight: bold; }
+
+.no-events {
+    opacity: 0.7;
+    font-size: 0.8rem;
+}
+/* Shield icon */
+.shield-icon {
+    margin-right: 6px;
+}
+
+/* Notification badge */
+.event-count {
+    background: #e74c3c;
+    color: white;
+    padding: 2px 6px;
+    border-radius: 50%;
+    font-size: 0.75rem;
+    margin-left: 6px;
+}
+
+/* Red pulsing glow when attack detected */
+.alert-glow {
+    animation: pulseGlow 1.5s infinite;
+}
+
+@keyframes pulseGlow {
+    0% { box-shadow: 0 0 0px rgba(231, 76, 60, 0.7); }
+    50% { box-shadow: 0 0 12px rgba(231, 76, 60, 1); }
+    100% { box-shadow: 0 0 0px rgba(231, 76, 60, 0.7); }
+}
+
+/* Hover expansion */
+.events-button:hover {
+    transform: scale(1.05);
+    transition: 0.2s ease;
+}

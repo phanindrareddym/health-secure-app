@@ -8,6 +8,54 @@
 <body>
 
 <div class="security-bar {{ security_status }}">
+    <div class="security-events-floating">
+    <div class="events-button" onclick="toggleSecurityPanel()">
+    <span class="shield-icon">🛡️</span>
+    Events 
+    <span id="event-count" class="event-count">{{ security_events|length }}</span>
+    <span id="arrow">▼</span>
+</div>
+
+    <div id="security-panel" class="security-panel">
+        {% if security_events %}
+            {% for e in security_events|reverse %}
+                <div class="event-row {{ e.severity }}">
+                    <span class="event-time">[{{ e.time }}]</span>
+                    <span class="event-type">{{ e.severity|upper }}</span>
+                    <span class="event-details">{{ e.details }}</span>
+                </div>
+            {% endfor %}
+        {% else %}
+            <p class="no-events">No security events yet.</p>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+function toggleSecurityPanel() {
+    const panel = document.getElementById("security-panel");
+    const arrow = document.getElementById("arrow");
+    panel.classList.toggle("open");
+    arrow.textContent = panel.classList.contains("open") ? "▲" : "▼";
+}
+</script>
+<script>
+// Highlight button when RED events exist
+function updateEventButton() {
+    const count = {{ security_events|length }};
+    const hasRed = {{ security_events|selectattr("severity", "equalto", "red")|list|length }} > 0;
+
+    const btn = document.querySelector(".events-button");
+
+    if (hasRed) {
+        btn.classList.add("alert-glow");
+    } else {
+        btn.classList.remove("alert-glow");
+    }
+}
+
+updateEventButton();
+</script>
     {% if security_status == "green" %}
         Security Status: All Clear (No suspicious activity detected)
     {% elif security_status == "yellow" %}
