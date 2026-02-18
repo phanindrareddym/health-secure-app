@@ -2,10 +2,17 @@
 <html>
 <head>
     <title>Your BMI Result</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
-    <h1>Your BMI Result</h1>
-    <p>Your BMI is: <strong>{{ bmi }}</strong></p>
-    <a href="/">Go back</a>
+
+<h1>Your BMI Result</h1>
+
+<p>Your BMI based on U.S. units (lbs, feet, inches) is:</p>
+
+<h2>{{ bmi }}</h2>
+
+<a href="/">Go Back</a>
+
 </body>
 </html>

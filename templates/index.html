@@ -2,20 +2,26 @@
 <html>
 <head>
     <title>Health Check App</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
-    <h1>Basic Health Check</h1>
-    <form action="/calculate" method="post">
-        <label>Age:</label>
-        <input type="number" name="age" required><br><br>
 
-        <label>Weight (kg):</label>
-        <input type="number" name="weight" required><br><br>
+<h1>BMI Calculator (U.S. Units)</h1>
 
-        <label>Height (cm):</label>
-        <input type="number" name="height" required><br><br>
+<form action="/calculate" method="POST">
 
-        <button type="submit">Calculate BMI</button>
-    </form>
+    <label>Age:</label>
+    <input type="number" name="age" min="1" required>
+
+    <label>Weight (lbs):</label>
+    <input type="number" name="weight" min="50" max="1000" required>
+
+    <label>Height:</label>
+    <input type="number" name="height_ft" placeholder="Feet" min="0" max="8" required>
+    <input type="number" name="height_in" placeholder="Inches" min="0" max="11" required>
+
+    <button type="submit">Calculate BMI</button>
+</form>
+
 </body>
 </html>
