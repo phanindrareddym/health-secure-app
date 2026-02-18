@@ -1,51 +1,285 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Health Check App</title>
+    <title>Health & Security Dashboard</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
 
-<h1>BMI Calculator (U.S. Units)</h1>
-
-<div class="card">
-<form action="/" method="POST">
-
-    <label>Age:</label>
-    <input type="number" name="age" min="1" required>
-
-    <label>Weight (lbs):</label>
-    <input type="number" name="weight" min="50" max="1000" required>
-
-    <label>Height:</label>
-    <div class="height-row">
-        <input type="number" name="height_ft" placeholder="Feet" min="0" max="8" required>
-        <input type="number" name="height_in" placeholder="Inches" min="0" max="11" required>
-    </div>
-
-    <button type="submit">Calculate BMI</button>
-</form>
-</div>
-
-{% if bmi %}
-<div class="result-card" style="border-left: 8px solid {{ color }};">
-    <h2>Your BMI: {{ bmi }}</h2>
-
-    {% if category %}
-    <p><strong>Category:</strong> {{ category }}</p>
-    <p><strong>Calorie Suggestion:</strong> {{ calories }}</p>
-    <p><strong>Health Tip:</strong> {{ tips }}</p>
-
-    <h3>BMI Chart</h3>
-    <ul>
-        <li>Underweight: &lt; 18.5</li>
-        <li>Normal: 18.5 – 24.9</li>
-        <li>Overweight: 25 – 29.9</li>
-        <li>Obese: 30+</li>
-    </ul>
+<div class="security-bar {{ security_status }}">
+    {% if security_status == "green" %}
+        Security Status: All Clear (No suspicious activity detected)
+    {% elif security_status == "yellow" %}
+        Security Status: Warning (Unusual activity observed)
+    {% else %}
+        Security Status: Alert (Potential attack attempt detected)
     {% endif %}
 </div>
-{% endif %}
+
+<div class="page-container">
+    <h1>Health & Security Analytics System</h1>
+    <p class="subtitle">Software-only health intelligence with real-time security awareness.</p>
+
+    <div class="selector-card">
+        <label for="tool-select">Select Health Tool:</label>
+        <select id="tool-select" onchange="onToolChange()">
+            <option value="bmi" {% if tool == 'bmi' %}selected{% endif %}>BMI Calculator</option>
+            <option value="calories" {% if tool == 'calories' %}selected{% endif %}>Daily Calorie Needs (BMR/TDEE)</option>
+            <option value="burn" {% if tool == 'burn' %}selected{% endif %}>Calorie Burn Estimator</option>
+            <option value="stress" {% if tool == 'stress' %}selected{% endif %}>Stress Level Score</option>
+            <option value="sleep" {% if tool == 'sleep' %}selected{% endif %}>Sleep Quality Score</option>
+            <option value="hydration" {% if tool == 'hydration' %}selected{% endif %}>Hydration Score</option>
+            <option value="heart" {% if tool == 'heart' %}selected{% endif %}>Heart Health Risk</option>
+            <option value="wellness" {% if tool == 'wellness' %}selected{% endif %}>Daily Wellness Score</option>
+        </select>
+    </div>
+
+    <div class="content-grid">
+
+        <div class="card">
+            <form id="tool-form" action="/" method="POST">
+                <input type="hidden" name="tool_type" id="tool_type" value="{{ tool }}">
+
+                {% if tool == "bmi" %}
+                    <h2>BMI Calculator (U.S. Units)</h2>
+                    <label>Age:</label>
+                    <input type="number" name="age" min="1" required>
+
+                    <label>Weight (lbs):</label>
+                    <input type="number" name="weight" min="50" max="1000" required>
+
+                    <label>Height:</label>
+                    <div class="row">
+                        <input type="number" name="height_ft" placeholder="Feet" min="0" max="8" required>
+                        <input type="number" name="height_in" placeholder="Inches" min="0" max="11" required>
+                    </div>
+
+                {% elif tool == "calories" %}
+                    <h2>Daily Calorie Needs (BMR/TDEE)</h2>
+                    <label>Age:</label>
+                    <input type="number" name="age" min="1" required>
+
+                    <label>Gender:</label>
+                    <select name="gender" required>
+                        <option value="male">Male</option>
+                        <option value="female">Female</option>
+                    </select>
+
+                    <label>Weight (lbs):</label>
+                    <input type="number" name="weight" min="50" max="1000" required>
+
+                    <label>Height:</label>
+                    <div class="row">
+                        <input type="number" name="height_ft" placeholder="Feet" min="0" max="8" required>
+                        <input type="number" name="height_in" placeholder="Inches" min="0" max="11" required>
+                    </div>
+
+                    <label>Activity Level:</label>
+                    <select name="activity" required>
+                        <option value="sedentary">Sedentary</option>
+                        <option value="light">Light</option>
+                        <option value="moderate">Moderate</option>
+                        <option value="active">Active</option>
+                        <option value="very_active">Very Active</option>
+                    </select>
+
+                {% elif tool == "burn" %}
+                    <h2>Calorie Burn Estimator</h2>
+                    <label>Weight (lbs):</label>
+                    <input type="number" name="weight" min="50" max="1000" required>
+
+                    <label>Activity Level:</label>
+                    <select name="activity" required>
+                        <option value="sedentary">Sedentary</option>
+                        <option value="light">Light</option>
+                        <option value="moderate">Moderate</option>
+                        <option value="active">Active</option>
+                        <option value="very_active">Very Active</option>
+                    </select>
+
+                {% elif tool == "stress" %}
+                    <h2>Stress Level Estimator</h2>
+                    <label>Mood (1–10):</label>
+                    <input type="number" name="mood" min="1" max="10" required>
+
+                    <label>Workload (1–10):</label>
+                    <input type="number" name="workload" min="1" max="10" required>
+
+                    <label>Sleep Hours (last night):</label>
+                    <input type="number" name="sleep" min="0" max="14" required>
+
+                {% elif tool == "sleep" %}
+                    <h2>Sleep Quality Score</h2>
+                    <label>Hours Slept (last night):</label>
+                    <input type="number" name="hours" min="0" max="14" step="0.5" required>
+
+                    <label>Interruptions (times you woke up):</label>
+                    <input type="number" name="interruptions" min="0" max="20" required>
+
+                    <label>Consistency (1–10):</label>
+                    <input type="number" name="consistency" min="1" max="10" required>
+
+                {% elif tool == "hydration" %}
+                    <h2>Hydration Score</h2>
+                    <label>Weight (lbs):</label>
+                    <input type="number" name="weight" min="50" max="1000" required>
+
+                    <label>Water Intake Today (oz):</label>
+                    <input type="number" name="intake" min="0" max="300" required>
+
+                {% elif tool == "heart" %}
+                    <h2>Heart Health Risk (Software Estimate)</h2>
+                    <label>Age:</label>
+                    <input type="number" name="age" min="1" required>
+
+                    <label>BMI (from your last check):</label>
+                    <input type="number" name="bmi" min="10" max="60" step="0.1" required>
+
+                    <label>Activity Level:</label>
+                    <select name="activity" required>
+                        <option value="sedentary">Sedentary</option>
+                        <option value="light">Light</option>
+                        <option value="moderate">Moderate</option>
+                        <option value="active">Active</option>
+                        <option value="very_active">Very Active</option>
+                    </select>
+
+                {% elif tool == "wellness" %}
+                    <h2>Daily Wellness Score</h2>
+                    <label>BMI:</label>
+                    <input type="number" name="bmi" min="10" max="60" step="0.1" required>
+
+                    <label>Stress Score (0–100):</label>
+                    <input type="number" name="stress" min="0" max="100" required>
+
+                    <label>Sleep Score (0–100):</label>
+                    <input type="number" name="sleep" min="0" max="100" required>
+
+                    <label>Hydration Score (0–100):</label>
+                    <input type="number" name="hydration" min="0" max="100" required>
+                {% endif %}
+
+                <button type="submit">Calculate</button>
+            </form>
+        </div>
+
+        <div class="card result-card">
+            <h2>Result & Insights</h2>
+
+            {% if result.error %}
+                <p class="error">{{ result.error }}</p>
+            {% else %}
+                {% if tool == "bmi" and result.bmi is defined %}
+                    <p><strong>BMI:</strong> {{ result.bmi }}</p>
+                    <p><strong>Category:</strong> {{ result.category }}</p>
+                {% elif tool == "calories" and result.bmr is defined %}
+                    <p><strong>BMR:</strong> {{ result.bmr }} kcal/day</p>
+                    <p><strong>TDEE:</strong> {{ result.tdee }} kcal/day</p>
+                {% elif tool == "burn" and result.per_hour is defined %}
+                    <p><strong>Estimated Calories Burned per Hour:</strong> {{ result.per_hour }}</p>
+                {% elif tool == "stress" and result.score is defined %}
+                    <p><strong>Stress Score:</strong> {{ result.score }} ({{ result.level }})</p>
+                {% elif tool == "sleep" and result.score is defined %}
+                    <p><strong>Sleep Score:</strong> {{ result.score }} ({{ result.level }})</p>
+                {% elif tool == "hydration" and result.intake is defined %}
+                    <p><strong>Intake:</strong> {{ result.intake }} oz</p>
+                    <p><strong>Required:</strong> {{ result.required }} oz</p>
+                    <p><strong>Level:</strong> {{ result.level }}</p>
+                {% elif tool == "heart" and result.risk is defined %}
+                    <p><strong>Heart Risk:</strong> {{ result.risk }} ({{ result.level }})</p>
+                {% elif tool == "wellness" and result.score is defined %}
+                    <p><strong>Wellness Score:</strong> {{ result.score }} ({{ result.level }})</p>
+                {% else %}
+                    <p>Fill the form and submit to see results.</p>
+                {% endif %}
+            {% endif %}
+
+            {% if result.color is defined %}
+                <div class="status-pill" style="background-color: {{ result.color }};"></div>
+            {% endif %}
+
+            {% if tool == "wellness" %}
+                <div class="flow-chart">
+                    <div class="flow-node">BMI</div>
+                    <div class="flow-arrow">→</div>
+                    <div class="flow-node">Stress</div>
+                    <div class="flow-arrow">→</div>
+                    <div class="flow-node">Sleep</div>
+                    <div class="flow-arrow">→</div>
+                    <div class="flow-node">Hydration</div>
+                    <div class="flow-arrow">→</div>
+                    <div class="flow-node final">Wellness Score</div>
+                </div>
+            {% endif %}
+        </div>
+
+    </div>
+
+    <div class="card chart-card">
+        <h2>Visualization</h2>
+
+        {% set labels = chart_data.get('labels', []) %}
+        {% set values = chart_data.get('values', []) %}
+
+        {% if labels and values %}
+            <canvas id="mainChart" width="400" height="200"></canvas>
+
+            <div class="html-chart-fallback">
+                {% for i in range(labels|length) %}
+                    {% set label = labels[i] %}
+                    {% set value = values[i] %}
+                    <div class="bar-row">
+                        <span class="bar-label">{{ label }}</span>
+                        <div class="bar-track">
+                            <div class="bar-fill" style="width: {{ value }}%;"></div>
+                        </div>
+                        <span class="bar-value">{{ value }}</span>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <p>No data yet. Submit a form to see charts.</p>
+        {% endif %}
+    </div>
+
+</div>
+
+<script>
+    function onToolChange() {
+        const select = document.getElementById('tool-select');
+        const tool = select.value;
+        document.getElementById('tool_type').value = tool;
+        document.getElementById('tool-form').submit();
+    }
+
+    {% if labels and values %}
+    try {
+        const ctx = document.getElementById('mainChart').getContext('2d');
+        const chart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: {{ labels|tojson }},
+                datasets: [{
+                    label: 'Health Metric',
+                    data: {{ values|tojson }},
+                    backgroundColor: 'rgba(46, 204, 113, 0.6)',
+                    borderColor: 'rgba(39, 174, 96, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    y: { beginAtZero: true }
+                }
+            }
+        });
+    } catch (e) {
+        console.log("Chart.js failed, using HTML fallback.");
+    }
+    {% endif %}
+</script>
 
 </body>
 </html>
