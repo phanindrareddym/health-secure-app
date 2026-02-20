@@ -55,8 +55,7 @@
             <div class="event">
                 <strong>{{ ip }}</strong> — Blocked until {{ until | fmt_time }}
 
-                <form action="/admin/unblock" method="POST" style="display:inline;">
-                    <input type="hidden" name="ip" value="{{ ip }}">
+                <form action="/admin/unblock/{{ ip }}" method="POST" style="display:inline;">
                     <button class="unblock-btn">Unblock</button>
                 </form>
             </div>
