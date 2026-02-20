@@ -293,3 +293,37 @@ button:hover {
     transform: scale(1.05);
     transition: 0.2s ease;
 }
+/* Toast popup */
+#toast {
+    visibility: hidden;
+    min-width: 200px;
+    background: rgba(231, 76, 60, 0.9);
+    color: white;
+    text-align: center;
+    border-radius: 8px;
+    padding: 10px;
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 4000;
+    font-weight: 600;
+    opacity: 0;
+    transition: opacity 0.4s ease, visibility 0.4s;
+}
+
+#toast.show {
+    visibility: visible;
+    opacity: 1;
+}
+
+/* Sparkline canvas styling */
+#sparkline {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 6px;
+    padding: 4px;
+}
+.event-risk {
+    margin-left: 8px;
+    opacity: 0.7;
+    font-size: 0.75rem;
+}

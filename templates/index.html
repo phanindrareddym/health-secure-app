@@ -7,27 +7,31 @@
 </head>
 <body>
 
+{% if security_events %}
 <div class="security-bar {{ security_status }}">
     <div class="security-events-floating">
-    <div class="events-button" onclick="toggleSecurityPanel()">
-    <span class="shield-icon">🛡️</span>
-    Events 
-    <span id="event-count" class="event-count">{{ security_events|length }}</span>
-    <span id="arrow">▼</span>
-</div>
 
-    <div id="security-panel" class="security-panel">
-        {% if security_events %}
+        <div class="events-button" onclick="toggleSecurityPanel()">
+            <span class="shield-icon">🛡️</span>
+            Events
+            <span id="event-count" class="event-count">{{ security_events|length }}</span>
+            <span id="arrow">▼</span>
+        </div>
+
+        <div id="security-panel" class="security-panel">
             {% for e in security_events|reverse %}
                 <div class="event-row {{ e.severity }}">
                     <span class="event-time">[{{ e.time }}]</span>
                     <span class="event-type">{{ e.severity|upper }}</span>
                     <span class="event-details">{{ e.details }}</span>
+
+                    {% if ip_behavior and ip_behavior[e.ip] %}
+                        <span class="event-risk">Risk: {{ ip_behavior[e.ip].risk_score }}</span>
+                    {% endif %}
                 </div>
             {% endfor %}
-        {% else %}
-            <p class="no-events">No security events yet.</p>
-        {% endif %}
+        </div>
+
     </div>
 </div>
 
@@ -39,6 +43,7 @@ function toggleSecurityPanel() {
     arrow.textContent = panel.classList.contains("open") ? "▲" : "▼";
 }
 </script>
+
 <script>
 // Highlight button when RED events exist
 function updateEventButton() {
@@ -56,18 +61,82 @@ function updateEventButton() {
 
 updateEventButton();
 </script>
-    {% if security_status == "green" %}
-        Security Status: All Clear (No suspicious activity detected)
-    {% elif security_status == "yellow" %}
-        Security Status: Warning (Unusual activity observed)
-    {% else %}
-        Security Status: Alert (Potential attack attempt detected)
-    {% endif %}
-</div>
+
+<script>
+// Detect if a red event exists
+const hasRedEvent = {{ security_events|selectattr("severity", "equalto", "red")|list|length }} > 0;
+
+// 1. Toast popup
+function showToast(message) {
+    const toast = document.getElementById("toast");
+    toast.textContent = message;
+    toast.classList.add("show");
+
+    setTimeout(() => {
+        toast.classList.remove("show");
+    }, 3000);
+}
+
+// 2. Sound alert
+function playAlertSound() {
+    const audio = document.getElementById("alert-sound");
+    audio.currentTime = 0;
+    audio.play();
+}
+
+// 3. Sparkline chart update
+function updateSparkline() {
+    const ctx = document.getElementById("sparkline").getContext("2d");
+
+    const eventCounts = {{ security_events|map(attribute="severity")|list|length }};
+
+    new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: [...Array(eventCounts).keys()],
+            datasets: [{
+                data: [...Array(eventCounts).keys()].map(i => i + 1),
+                borderColor: '#e74c3c',
+                borderWidth: 2,
+                pointRadius: 0,
+                tension: 0.3
+            }]
+        },
+        options: {
+            responsive: false,
+            plugins: { legend: { display: false } },
+            scales: {
+                x: { display: false },
+                y: { display: false }
+            }
+        }
+    });
+}
+
+// Trigger all alerts ONLY if red event exists
+if (hasRedEvent) {
+    showToast("⚠️ Attack detected!");
+    playAlertSound();
+    updateSparkline();
+}
+</script>
+
+{% if security_status == "green" %}
+    Security Status: All Clear (No suspicious activity detected)
+{% elif security_status == "yellow" %}
+    Security Status: Warning (Unusual activity detected)
+{% else %}
+    Security Status: Alert (Potential attack attempt detected)
+{% endif %}
+
+{% endif %}  <!-- END security_events check -->
+
+
+<audio id="alert-sound" src="/static/alert.mp3"></audio>
 
 <div class="page-container">
     <h1>Health & Security Analytics System</h1>
-    <p class="subtitle">Software-only health intelligence with real-time security awareness.</p>
+    <p class="subtitle">Software-only Health Intelligence With Real-Time Security</p>
 
     <div class="selector-card">
         <label for="tool-select">Select Health Tool:</label>
@@ -328,6 +397,16 @@ updateEventButton();
     }
     {% endif %}
 </script>
+<!-- Toast Popup -->
+<div id="toast"></div>
+
+<!-- Sparkline Chart -->
+<canvas id="sparkline" width="120" height="40" style="position:fixed; top:60px; right:20px; z-index:3000;"></canvas>
+
+<!-- Alert Sound -->
+<audio id="alert-sound">
+    <source src="https://actions.google.com/sounds/v1/alarms/beep_short.ogg" type="audio/ogg">
+</audio>
 
 </body>
 </html>
