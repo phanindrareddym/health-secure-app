@@ -10,20 +10,36 @@
         .red { color: red; font-weight: bold; }
         .yellow { color: orange; font-weight: bold; }
         .green { color: green; font-weight: bold; }
+        .map-link { color: blue; text-decoration: underline; font-size: 0.9em; }
     </style>
 </head>
 <body>
 
 <h1>Admin Security Dashboard</h1>
 
+<!-- SECURITY EVENTS -->
 <div class="section">
     <h2>Security Events</h2>
+
     {% if security_events %}
         {% for e in security_events %}
             <div class="event">
                 <span class="{{ e.severity }}">{{ e.severity.upper() }}</span> —
                 <strong>{{ e.ip }}</strong> —
                 {{ e.details }}
+
+                <!-- ⭐ LOCATION + MAP LINK -->
+                {% if e.location %}
+                    <br>
+                    <strong>Location:</strong> {{ e.location }}
+                {% endif %}
+
+                {% if e.lat and e.lon %}
+                    <br>
+                    <a class="map-link" href="https://www.google.com/maps?q={{ e.lat }},{{ e.lon }}" target="_blank">
+                        View on Map
+                    </a>
+                {% endif %}
             </div>
         {% endfor %}
     {% else %}
@@ -31,6 +47,7 @@
     {% endif %}
 </div>
 
+<!-- IP BEHAVIOR -->
 <div class="section">
     <h2>IP Behavior</h2>
     {% if ip_behavior %}
@@ -48,6 +65,7 @@
     {% endif %}
 </div>
 
+<!-- BLOCKED IPs -->
 <div class="section">
     <h2>Blocked IPs</h2>
     {% if blocked_ips %}
