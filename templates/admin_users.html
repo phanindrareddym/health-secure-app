@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>User-Login Security Dashboard</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 40px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { padding: 10px; border-bottom: 1px solid #ddd; }
+        th { background: #f4f4f4; text-align: left; }
+
+        .risk-low { color: #2ecc71; font-weight: bold; }
+        .risk-medium { color: #f1c40f; font-weight: bold; }
+        .risk-high { color: #e74c3c; font-weight: bold; }
+
+        /* Expandable row styling */
+        .expandable {
+            display: none;
+            background: #fafafa;
+            padding: 10px 15px;
+            border-left: 3px solid #3498db;
+        }
+        .expandable table {
+            width: 100%;
+            margin-top: 10px;
+            border-collapse: collapse;
+        }
+        .expandable th, .expandable td {
+            padding: 6px;
+            border-bottom: 1px solid #ddd;
+        }
+        .user-row {
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+
+<h2>User Security Dashboard</h2>
+
+<table>
+    <tr>
+        <th>User</th>
+        <th>Last Login</th>
+        <th>IP</th>
+        <th>Location</th>
+        <th>Device</th>
+        <th>Risk</th>
+    </tr>
+
+    {% for u in users %}
+    <!-- Clickable row -->
+    <tr class="user-row" onclick="toggleHistory('hist_{{ loop.index }}')">
+        <td>{{ u.username }}</td>
+        <td>{{ u.last_login|fmt_time if u.last_login else "Never" }}</td>
+        <td>{{ u.last_ip or "N/A" }}</td>
+        <td>{{ u.last_location or "N/A" }}</td>
+        <td>{{ u.last_device or "N/A" }}</td>
+
+        <td>
+            {% if u.risk < 5 %}
+                <span class="risk-low">Low</span>
+            {% elif u.risk < 15 %}
+                <span class="risk-medium">Medium</span>
+            {% else %}
+                <span class="risk-high">High</span>
+            {% endif %}
+        </td>
+    </tr>
+
+    <!-- Expandable login history -->
+    <tr>
+        <td colspan="6">
+            <div class="expandable" id="hist_{{ loop.index }}">
+                <h4>Login History</h4>
+
+                {% if u.history %}
+                <table>
+                    <tr>
+                        <th>Time</th>
+                        <th>IP</th>
+                        <th>Browser</th>
+                        <th>OS</th>
+                        <th>Device</th>
+                    </tr>
+
+                    {% for h in u.history %}
+                    <tr>
+                        <td>{{ h.time|fmt_time }}</td>
+                        <td>{{ h.ip }}</td>
+                        <td>{{ h.browser }}</td>
+                        <td>{{ h.os }}</td>
+                        <td>{{ h.device }}</td>
+                    </tr>
+                    {% endfor %}
+                </table>
+                {% else %}
+                    <p>No login history available.</p>
+                {% endif %}
+            </div>
+        </td>
+    </tr>
+    {% endfor %}
+</table>
+
+<script>
+function toggleHistory(id) {
+    const row = document.getElementById(id);
+    row.style.display = row.style.display === "none" ? "block" : "none";
+}
+</script>
+
+</body>
+</html>

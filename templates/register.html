@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Create Account - Health App</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f5f7fb;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .card {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+            width: 320px;
+        }
+        h2 {
+            margin-top: 0;
+            text-align: center;
+            color: #2c3e50;
+        }
+        input {
+            width: 100%;
+            padding: 10px;
+            margin: 8px 0 16px;
+            border-radius: 6px;
+            border: 1px solid #ccd1d9;
+        }
+        button {
+            width: 100%;
+            padding: 10px;
+            background: #2ecc71;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        button:hover {
+            background: #27ae60;
+        }
+        .link {
+            text-align: center;
+            margin-top: 10px;
+            font-size: 14px;
+        }
+        .error {
+            color: #e74c3c;
+            font-size: 14px;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+        .success {
+            color: #27ae60;
+            font-size: 14px;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+<div class="card">
+    <h2>Create Account</h2>
+
+    {% if error %}
+        <div class="error">{{ error }}</div>
+    {% endif %}
+    {% if success %}
+        <div class="success">{{ success }}</div>
+    {% endif %}
+
+    <form method="POST" action="/register">
+        <input type="text" name="username" placeholder="Choose a username" required>
+        <input type="password" name="password" placeholder="Choose a password" required>
+        <button type="submit">Sign Up</button>
+    </form>
+
+    <div class="link">
+        Already have an account? <a href="/login">Login</a>
+    </div>
+</div>
+</body>
+</html>

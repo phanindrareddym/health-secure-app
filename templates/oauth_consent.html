@@ -1,0 +1,9 @@
+<h2>Authorize Application</h2>
+<p>User: {{ username }}</p>
+<p>Client: {{ client_id }}</p>
+<p>Scopes: {{ scope|join(", ") }}</p>
+
+<form method="POST">
+    <button name="approve" value="yes">Allow</button>
+    <button name="approve" value="no">Deny</button>
+</form>
