@@ -3,3 +3,4 @@ gunicorn==21.2.0
 requests==2.31.0
 PyJWT==2.8.0
 user-agents==2.2.0
+Werkzeug==3.0.1
