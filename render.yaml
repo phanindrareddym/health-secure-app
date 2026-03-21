@@ -1,0 +1,21 @@
+services:
+  - type: web
+    name: health-secure-app
+    env: python
+    buildCommand: "pip install -r requirements.txt"
+    startCommand: "gunicorn app:app --bind 0.0.0.0:$PORT"
+    envVars:
+      - key: RENDER
+        value: "true"
+      - key: FLASK_SECRET_KEY
+        sync: false
+      - key: JWT_SECRET
+        sync: false
+      - key: AZURE_CLIENT_ID
+        sync: false
+      - key: AZURE_CLIENT_SECRET
+        sync: false
+      - key: AZURE_TENANT_ID
+        sync: false
+      - key: AZURE_REDIRECT_URI
+        sync: false

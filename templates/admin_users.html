@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>User-Login Security Dashboard</title>
+    <title>Admin - User Security Dashboard</title>
     <style>
         body { font-family: Arial, sans-serif; margin: 40px; }
         table { width: 100%; border-collapse: collapse; margin-top: 20px; }
@@ -12,7 +12,6 @@
         .risk-medium { color: #f1c40f; font-weight: bold; }
         .risk-high { color: #e74c3c; font-weight: bold; }
 
-        /* Expandable row styling */
         .expandable {
             display: none;
             background: #fafafa;
@@ -28,33 +27,70 @@
             padding: 6px;
             border-bottom: 1px solid #ddd;
         }
+
         .user-row {
             cursor: pointer;
+        }
+
+        .edit-link {
+            color: #2980b9;
+            font-weight: bold;
+            text-decoration: none;
+        }
+        .edit-link:hover {
+            text-decoration: underline;
+        }
+
+        .top-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .create-btn {
+            padding: 8px 14px;
+            background: #3498db;
+            color: white;
+            text-decoration: none;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+        .create-btn:hover {
+            background: #2980b9;
         }
     </style>
 </head>
 <body>
 
-<h2>User Security Dashboard</h2>
+<div class="top-bar">
+    <h2>Admin – User Security Dashboard</h2>
+    <a class="create-btn" href="/admin/users/create">+ Create User</a>
+</div>
 
 <table>
     <tr>
+        <th>ID</th>
         <th>User</th>
+        <th>Email</th>
+        <th>Name</th>
+        <th>Role</th>
         <th>Last Login</th>
         <th>IP</th>
-        <th>Location</th>
-        <th>Device</th>
         <th>Risk</th>
+        <th>Actions</th>
     </tr>
 
     {% for u in users %}
     <!-- Clickable row -->
     <tr class="user-row" onclick="toggleHistory('hist_{{ loop.index }}')">
+        <td>{{ u.id }}</td>
         <td>{{ u.username }}</td>
+        <td>{{ u.email or 'N/A' }}</td>
+        <td>{{ u.name or 'N/A' }}</td>
+        <td>{{ u.role }}</td>
+
         <td>{{ u.last_login|fmt_time if u.last_login else "Never" }}</td>
         <td>{{ u.last_ip or "N/A" }}</td>
-        <td>{{ u.last_location or "N/A" }}</td>
-        <td>{{ u.last_device or "N/A" }}</td>
 
         <td>
             {% if u.risk < 5 %}
@@ -65,11 +101,15 @@
                 <span class="risk-high">High</span>
             {% endif %}
         </td>
+
+        <td>
+            <a class="edit-link" href="/admin/users/{{ u.id }}/edit">Edit</a>
+        </td>
     </tr>
 
     <!-- Expandable login history -->
     <tr>
-        <td colspan="6">
+        <td colspan="9">
             <div class="expandable" id="hist_{{ loop.index }}">
                 <h4>Login History</h4>
 
