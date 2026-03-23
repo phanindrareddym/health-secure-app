@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Edit User</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 40px; }
+        form { max-width: 400px; }
+        label { display: block; margin-top: 12px; font-weight: bold; }
+        input, select {
+            width: 100%;
+            padding: 8px;
+            margin-top: 4px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        button {
+            margin-top: 20px;
+            padding: 10px 16px;
+            background: #3498db;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        button:hover { background: #2980b9; }
+
+        .delete-btn {
+            background: #e74c3c;
+            margin-top: 10px;
+        }
+        .delete-btn:hover { background: #c0392b; }
+
+        a { text-decoration: none; color: #2980b9; }
+    </style>
+</head>
+<body>
+
+<h2>Edit User: {{ user.username }}</h2>
+
+<form method="POST">
+    <label>Name</label>
+    <input name="name" value="{{ user.name }}">
+
+    <label>Email</label>
+    <input name="email" value="{{ user.email }}">
+
+    <label>Role</label>
+    <select name="role">
+        <option value="user" {% if user.role == "user" %}selected{% endif %}>User</option>
+        <option value="admin" {% if user.role == "admin" %}selected{% endif %}>Admin</option>
+    </select>
+
+    <label>New Password (optional)</label>
+    <input name="new_password" type="password">
+
+    <button type="submit">Save Changes</button>
+</form>
+
+<form method="POST" action="/admin/users/{{ user.id }}/delete">
+    <button class="delete-btn" type="submit" onclick="return confirm('Delete this user?')">
+        Delete User
+    </button>
+</form>
+
+<br>
+<a href="/admin/users">← Back to Users</a>
+
+</body>
+</html>

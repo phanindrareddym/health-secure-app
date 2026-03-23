@@ -1,87 +1,183 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
     <title>Admin Security Dashboard</title>
+
     <style>
-        body { font-family: Arial, sans-serif; padding: 20px; background: #f5f5f5; }
-        h1 { color: #333; }
-        .section { background: white; padding: 15px; margin-bottom: 20px; border-radius: 8px; }
-        .event { padding: 8px; border-bottom: 1px solid #ddd; }
-        .red { color: red; font-weight: bold; }
-        .yellow { color: orange; font-weight: bold; }
-        .green { color: green; font-weight: bold; }
-        .map-link { color: blue; text-decoration: underline; font-size: 0.9em; }
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+            background: #0a0f1f;
+            color: #e0e0e0;
+        }
+
+        .header {
+            background: #11182f;
+            padding: 20px;
+            border-bottom: 2px solid cyan;
+            box-shadow: 0 0 15px rgba(0,255,255,0.3);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header h1 {
+            color: cyan;
+            margin: 0;
+            font-size: 28px;
+            letter-spacing: 1px;
+        }
+
+        .nav-links a {
+            color: cyan;
+            margin-left: 20px;
+            text-decoration: none;
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        .nav-links a:hover {
+            text-decoration: underline;
+        }
+
+        .container {
+            width: 90%;
+            margin: 30px auto;
+        }
+
+        .section {
+            background: #141b33;
+            padding: 20px;
+            margin-bottom: 25px;
+            border-radius: 10px;
+            border: 1px solid rgba(0,255,255,0.2);
+            box-shadow: 0 0 12px rgba(0,255,255,0.1);
+        }
+
+        .section h2 {
+            color: cyan;
+            margin-bottom: 15px;
+            border-bottom: 1px solid rgba(0,255,255,0.3);
+            padding-bottom: 8px;
+        }
+
+        .event {
+            padding: 12px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .event:last-child {
+            border-bottom: none;
+        }
+
+        .red { color: #ff4d4d; font-weight: bold; }
+        .yellow { color: #ffcc00; font-weight: bold; }
+        .green { color: #00ff99; font-weight: bold; }
+
+        .map-link {
+            color: cyan;
+            text-decoration: underline;
+            font-size: 0.9em;
+        }
+
+        .unblock-btn {
+            background: #ff4d4d;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            margin-left: 10px;
+        }
+
+        .unblock-btn:hover {
+            background: #ff1a1a;
+        }
     </style>
 </head>
+
 <body>
 
-<h1>Admin Security Dashboard</h1>
+    <div class="header">
+        <h1>Admin Security Dashboard</h1>
 
-<!-- SECURITY EVENTS -->
-<div class="section">
-    <h2>Security Events</h2>
+        <div class="nav-links">
+            <a href="/admin/security">Security</a>
+            <a href="/admin/users">Users</a>
+            <a href="/admin/logout">Logout</a>
+        </div>
+    </div>
 
-    {% if security_events %}
-        {% for e in security_events %}
-            <div class="event">
-                <span class="{{ e.severity }}">{{ e.severity.upper() }}</span> —
-                <strong>{{ e.ip }}</strong> —
-                {{ e.details }}
+    <div class="container">
 
-                <!-- ⭐ LOCATION + MAP LINK -->
-                {% if e.location %}
-                    <br>
-                    <strong>Location:</strong> {{ e.location }}
-                {% endif %}
+        <!-- SECURITY EVENTS -->
+        <div class="section">
+            <h2>Security Events</h2>
 
-                {% if e.lat and e.lon %}
-                    <br>
-                    <a class="map-link" href="https://www.google.com/maps?q={{ e.lat }},{{ e.lon }}" target="_blank">
-                        View on Map
-                    </a>
-                {% endif %}
-            </div>
-        {% endfor %}
-    {% else %}
-        <p>No events yet.</p>
-    {% endif %}
-</div>
+            {% if security_events %}
+                {% for e in security_events %}
+                    <div class="event">
+                        <span class="{{ e.severity }}">{{ e.severity.upper() }}</span> —
+                        <strong>{{ e.ip }}</strong> —
+                        {{ e.details }}
 
-<!-- IP BEHAVIOR -->
-<div class="section">
-    <h2>IP Behavior</h2>
-    {% if ip_behavior %}
-        {% for ip, data in ip_behavior.items() %}
-            <div class="event">
-                <strong>{{ ip }}</strong><br>
-                Risk Score: {{ data.risk_score }}<br>
-                Suspicious Count: {{ data.suspicious_count }}<br>
-                Requests: {{ data.request_count }}<br>
-                Status: {{ data.risk }}
-            </div>
-        {% endfor %}
-    {% else %}
-        <p>No IP behavior data.</p>
-    {% endif %}
-</div>
+                        {% if e.location %}
+                            <br><strong>Location:</strong> {{ e.location }}
+                        {% endif %}
 
-<!-- BLOCKED IPs -->
-<div class="section">
-    <h2>Blocked IPs</h2>
-    {% if blocked_ips %}
-        {% for ip, until in blocked_ips.items() %}
-            <div class="event">
-                <strong>{{ ip }}</strong> — Blocked until {{ until | fmt_time }}
+                        {% if e.lat and e.lon %}
+                            <br><a class="map-link" href="https://www.google.com/maps?q={{ e.lat }},{{ e.lon }}" target="_blank">
+                                View on Map
+                            </a>
+                        {% endif %}
+                    </div>
+                {% endfor %}
+            {% else %}
+                <p>No events yet.</p>
+            {% endif %}
+        </div>
 
-                <form action="/admin/unblock/{{ ip }}" method="POST" style="display:inline;">
-                    <button class="unblock-btn">Unblock</button>
-                </form>
-            </div>
-        {% endfor %}
-    {% else %}
-        <p>No blocked IPs.</p>
-    {% endif %}
-</div>
+        <!-- IP BEHAVIOR -->
+        <div class="section">
+            <h2>IP Behavior</h2>
+
+            {% if ip_behavior %}
+                {% for ip, data in ip_behavior.items() %}
+                    <div class="event">
+                        <strong>{{ ip }}</strong><br>
+                        Risk Score: {{ data.risk_score }}<br>
+                        Suspicious Count: {{ data.suspicious_count }}<br>
+                        Requests: {{ data.request_count }}<br>
+                        Status: {{ data.risk }}
+                    </div>
+                {% endfor %}
+            {% else %}
+                <p>No IP behavior data.</p>
+            {% endif %}
+        </div>
+
+        <!-- BLOCKED IPs -->
+        <div class="section">
+            <h2>Blocked IPs</h2>
+
+            {% if blocked_ips %}
+                {% for ip, until in blocked_ips.items() %}
+                    <div class="event">
+                        <strong>{{ ip }}</strong> — Blocked until {{ until | fmt_time }}
+
+                        <form action="/admin/unblock/{{ ip }}" method="POST" style="display:inline;">
+                            <button class="unblock-btn">Unblock</button>
+                        </form>
+                    </div>
+                {% endfor %}
+            {% else %}
+                <p>No blocked IPs.</p>
+            {% endif %}
+        </div>
+
+    </div>
 
 </body>
 </html>

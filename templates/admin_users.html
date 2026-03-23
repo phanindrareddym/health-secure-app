@@ -1,146 +1,241 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
     <title>Admin - User Security Dashboard</title>
+
     <style>
-        body { font-family: Arial, sans-serif; margin: 40px; }
-        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-        th, td { padding: 10px; border-bottom: 1px solid #ddd; }
-        th { background: #f4f4f4; text-align: left; }
-
-        .risk-low { color: #2ecc71; font-weight: bold; }
-        .risk-medium { color: #f1c40f; font-weight: bold; }
-        .risk-high { color: #e74c3c; font-weight: bold; }
-
-        .expandable {
-            display: none;
-            background: #fafafa;
-            padding: 10px 15px;
-            border-left: 3px solid #3498db;
-        }
-        .expandable table {
-            width: 100%;
-            margin-top: 10px;
-            border-collapse: collapse;
-        }
-        .expandable th, .expandable td {
-            padding: 6px;
-            border-bottom: 1px solid #ddd;
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+            background: #0a0f1f;
+            color: #e0e0e0;
         }
 
-        .user-row {
-            cursor: pointer;
-        }
-
-        .edit-link {
-            color: #2980b9;
-            font-weight: bold;
-            text-decoration: none;
-        }
-        .edit-link:hover {
-            text-decoration: underline;
-        }
-
-        .top-bar {
+        .header {
+            background: #11182f;
+            padding: 20px;
+            border-bottom: 2px solid cyan;
+            box-shadow: 0 0 15px rgba(0,255,255,0.3);
             display: flex;
             justify-content: space-between;
             align-items: center;
         }
 
-        .create-btn {
-            padding: 8px 14px;
-            background: #3498db;
-            color: white;
-            text-decoration: none;
-            border-radius: 4px;
-            font-weight: bold;
+        .header h1 {
+            color: cyan;
+            margin: 0;
+            font-size: 28px;
+            letter-spacing: 1px;
         }
+
+        .nav-links a {
+            color: cyan;
+            margin-left: 20px;
+            text-decoration: none;
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        .nav-links a:hover {
+            text-decoration: underline;
+        }
+
+        .container {
+            width: 95%;
+            margin: 30px auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: #141b33;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 0 12px rgba(0,255,255,0.1);
+        }
+
+        th {
+            background: #1c2547;
+            color: cyan;
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid rgba(0,255,255,0.2);
+        }
+
+        td {
+            padding: 12px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        tr:hover {
+            background: rgba(0,255,255,0.05);
+            cursor: pointer;
+        }
+
+        .risk-low { color: #00ff99; font-weight: bold; }
+        .risk-medium { color: #ffcc00; font-weight: bold; }
+        .risk-high { color: #ff4d4d; font-weight: bold; }
+
+        .expandable {
+            display: none;
+            background: #0f162d;
+            padding: 15px;
+            border-left: 3px solid cyan;
+            border-radius: 6px;
+            margin-top: 10px;
+        }
+
+        .expandable table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .expandable th {
+            background: #1c2547;
+            color: cyan;
+            padding: 8px;
+        }
+
+        .expandable td {
+            padding: 8px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .edit-link {
+            color: cyan;
+            font-weight: bold;
+            text-decoration: none;
+        }
+
+        .edit-link:hover {
+            text-decoration: underline;
+        }
+
+        .create-btn {
+            padding: 10px 16px;
+            background: cyan;
+            color: #000;
+            text-decoration: none;
+            border-radius: 6px;
+            font-weight: bold;
+            box-shadow: 0 0 10px rgba(0,255,255,0.4);
+        }
+
         .create-btn:hover {
-            background: #2980b9;
+            background: #00e0e0;
+        }
+
+        button {
+            background: transparent;
+            border: none;
+            color: #ff4d4d;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        button:hover {
+            color: #ff1a1a;
         }
     </style>
 </head>
+
 <body>
 
-<div class="top-bar">
-    <h2>Admin – User Security Dashboard</h2>
-    <a class="create-btn" href="/admin/users/create">+ Create User</a>
-</div>
+    <div class="header">
+        <h1>Admin – User Security Dashboard</h1>
 
-<table>
-    <tr>
-        <th>ID</th>
-        <th>User</th>
-        <th>Email</th>
-        <th>Name</th>
-        <th>Role</th>
-        <th>Last Login</th>
-        <th>IP</th>
-        <th>Risk</th>
-        <th>Actions</th>
-    </tr>
+        <div class="nav-links">
+            <a href="/admin/security">Security</a>
+            <a href="/admin/users">Users</a>
+            <a href="/admin/logout">Logout</a>
+        </div>
+    </div>
 
-    {% for u in users %}
-    <!-- Clickable row -->
-    <tr class="user-row" onclick="toggleHistory('hist_{{ loop.index }}')">
-        <td>{{ u.id }}</td>
-        <td>{{ u.username }}</td>
-        <td>{{ u.email or 'N/A' }}</td>
-        <td>{{ u.name or 'N/A' }}</td>
-        <td>{{ u.role }}</td>
+    <div class="container">
 
-        <td>{{ u.last_login|fmt_time if u.last_login else "Never" }}</td>
-        <td>{{ u.last_ip or "N/A" }}</td>
+        <div style="text-align:right; margin-bottom:15px;">
+            <a class="create-btn" href="/admin/users/create">+ Create User</a>
+        </div>
 
-        <td>
-            {% if u.risk < 5 %}
-                <span class="risk-low">Low</span>
-            {% elif u.risk < 15 %}
-                <span class="risk-medium">Medium</span>
-            {% else %}
-                <span class="risk-high">High</span>
-            {% endif %}
-        </td>
+        <table>
+            <tr>
+                <th>ID</th>
+                <th>User</th>
+                <th>Email</th>
+                <th>Name</th>
+                <th>Role</th>
+                <th>Last Login</th>
+                <th>IP</th>
+                <th>Risk</th>
+                <th>Actions</th>
+            </tr>
 
-        <td>
-            <a class="edit-link" href="/admin/users/{{ u.id }}/edit">Edit</a>
-        </td>
-    </tr>
+            {% for u in users %}
+            <tr class="user-row" onclick="toggleHistory('hist_{{ loop.index }}')">
+                <td>{{ u.id }}</td>
+                <td>{{ u.username }}</td>
+                <td>{{ u.email or 'N/A' }}</td>
+                <td>{{ u.name or 'N/A' }}</td>
+                <td>{{ u.role }}</td>
+                <td>{{ u.last_login|fmt_time if u.last_login else "Never" }}</td>
+                <td>{{ u.last_ip or "N/A" }}</td>
 
-    <!-- Expandable login history -->
-    <tr>
-        <td colspan="9">
-            <div class="expandable" id="hist_{{ loop.index }}">
-                <h4>Login History</h4>
+                <td>
+                    {% if u.risk < 5 %}
+                        <span class="risk-low">Low</span>
+                    {% elif u.risk < 15 %}
+                        <span class="risk-medium">Medium</span>
+                    {% else %}
+                        <span class="risk-high">High</span>
+                    {% endif %}
+                </td>
 
-                {% if u.history %}
-                <table>
-                    <tr>
-                        <th>Time</th>
-                        <th>IP</th>
-                        <th>Browser</th>
-                        <th>OS</th>
-                        <th>Device</th>
-                    </tr>
+                <td>
+                    <a class="edit-link" href="/admin/users/{{ u.id }}/edit">Edit</a>
 
-                    {% for h in u.history %}
-                    <tr>
-                        <td>{{ h.time|fmt_time }}</td>
-                        <td>{{ h.ip }}</td>
-                        <td>{{ h.browser }}</td>
-                        <td>{{ h.os }}</td>
-                        <td>{{ h.device }}</td>
-                    </tr>
-                    {% endfor %}
-                </table>
-                {% else %}
-                    <p>No login history available.</p>
-                {% endif %}
-            </div>
-        </td>
-    </tr>
-    {% endfor %}
-</table>
+                    <form method="POST" action="/admin/users/{{ u.id }}/delete" style="display:inline;">
+                        <button type="submit" onclick="return confirm('Delete this user?')">Delete</button>
+                    </form>
+                </td>
+            </tr>
+
+            <tr>
+                <td colspan="9">
+                    <div class="expandable" id="hist_{{ loop.index }}">
+                        <h4 style="color: cyan;">Login History</h4>
+
+                        {% if u.history %}
+                        <table>
+                            <tr>
+                                <th>Time</th>
+                                <th>IP</th>
+                                <th>Browser</th>
+                                <th>OS</th>
+                                <th>Device</th>
+                            </tr>
+
+                            {% for h in u.history %}
+                            <tr>
+                                <td>{{ h.time|fmt_time }}</td>
+                                <td>{{ h.ip }}</td>
+                                <td>{{ h.browser }}</td>
+                                <td>{{ h.os }}</td>
+                                <td>{{ h.device }}</td>
+                            </tr>
+                            {% endfor %}
+                        </table>
+                        {% else %}
+                            <p>No login history available.</p>
+                        {% endif %}
+                    </div>
+                </td>
+            </tr>
+            {% endfor %}
+        </table>
+
+    </div>
 
 <script>
 function toggleHistory(id) {

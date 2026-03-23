@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html>
+<body>
+    <h2>MFA Verification</h2>
+
+    {% if error %}
+        <p style="color:red">{{ error }}</p>
+    {% endif %}
+
+    <form method="post">
+        <input type="text" name="code" placeholder="Enter 6-digit code" required>
+        <button type="submit">Verify</button>
+    </form>
+</body>
+</html>

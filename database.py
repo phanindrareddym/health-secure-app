@@ -1,4 +1,5 @@
 import sqlite3
+import pyotp
 
 DB_PATH = "auth.db"
 
@@ -23,7 +24,7 @@ def init_db():
     )
     """)
 
-    # MFA table (for later)
+    # MFA table
     cur.execute("""
     CREATE TABLE IF NOT EXISTS mfa (
         user_id INTEGER UNIQUE,
@@ -33,7 +34,7 @@ def init_db():
     )
     """)
 
-    # Security events table (for suspicious session logs, etc.)
+    # Security events table
     cur.execute("""
     CREATE TABLE IF NOT EXISTS security_events (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -48,11 +49,12 @@ def init_db():
     conn.commit()
     conn.close()
 
+
 def create_user(username, email, name, role="user", password_hash=None):
     conn = get_db()
     cur = conn.cursor()
 
-    # Azure users won't have a password, so set a placeholder
+    # Azure users won't have a password
     if password_hash is None:
         password_hash = "azure-oauth"
 
@@ -72,6 +74,7 @@ def get_user_by_username(username):
     conn.close()
     return user
 
+
 def get_all_users():
     conn = get_db()
     cur = conn.cursor()
@@ -90,14 +93,56 @@ def get_user_by_id(user_id):
     return user
 
 
-def update_user(user_id, email, name, role):
+def get_mfa_record(user_id):
+    conn = get_db()
+    cur = conn.cursor()
+    cur.execute("SELECT * FROM mfa WHERE user_id = ?", (user_id,))
+    row = cur.fetchone()
+    conn.close()
+    return row
+
+
+def set_mfa_secret(user_id, secret):
+    conn = get_db()
+    cur = conn.cursor()
+    cur.execute("""
+        INSERT INTO mfa (user_id, secret, enabled)
+        VALUES (?, ?, 0)
+        ON CONFLICT(user_id) DO UPDATE SET secret = excluded.secret
+    """, (user_id, secret))
+    conn.commit()
+    conn.close()
+
+
+def enable_mfa(user_id):
+    conn = get_db()
+    cur = conn.cursor()
+    cur.execute("UPDATE mfa SET enabled = 1 WHERE user_id = ?", (user_id,))
+    conn.commit()
+    conn.close()
+
+
+def is_mfa_enabled(user_id):
+    record = get_mfa_record(user_id)
+    return record and record["enabled"] == 1
+
+
+def verify_mfa_code(user_id, code):
+    record = get_mfa_record(user_id)
+    if not record or not record["secret"]:
+        return False
+
+    totp = pyotp.TOTP(record["secret"])
+    return totp.verify(code)
+
+def update_user(user_id, name, email, role):
     conn = get_db()
     cur = conn.cursor()
     cur.execute("""
         UPDATE users
-        SET email = ?, name = ?, role = ?
+        SET name = ?, email = ?, role = ?
         WHERE id = ?
-    """, (email, name, role, user_id))
+    """, (name, email, role, user_id))
     conn.commit()
     conn.close()
 
@@ -110,5 +155,12 @@ def update_user_password(user_id, new_password_hash):
         SET password_hash = ?
         WHERE id = ?
     """, (new_password_hash, user_id))
+    conn.commit()
+    conn.close()
+
+def delete_user(user_id):
+    conn = get_db()
+    cur = conn.cursor()
+    cur.execute("DELETE FROM users WHERE id = ?", (user_id,))
     conn.commit()
     conn.close()
