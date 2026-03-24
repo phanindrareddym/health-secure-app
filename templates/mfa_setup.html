@@ -1,18 +1,97 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>MFA Setup</title>
+
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+
+            background: linear-gradient(135deg, #0a0f1f, #0d1b2a, #0f3d3e);
+            font-family: "Segoe UI", Arial, sans-serif;
+            color: #e0e0e0;
+        }
+
+        .card {
+            width: 650px;
+            padding: 50px;
+            border-radius: 16px;
+            background: rgba(255,255,255,0.08);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(0,255,255,0.25);
+            box-shadow: 0 0 25px rgba(0,255,255,0.15);
+        }
+
+        h2 {
+            text-align: center;
+            color: #00e5ff;
+            margin-bottom: 25px;
+            font-size: 30px;
+        }
+
+        /* MASTER CLASS — all boxes identical */
+        .mfa-box {
+            width: 100%;
+            padding: 20px;
+            border-radius: 12px;
+            background: rgba(255,255,255,0.15);
+            font-size: 22px;
+            text-align: center;
+            letter-spacing: 3px;
+            margin-bottom: 25px;
+            color: #e0e0e0;
+            border: none;
+            display: block;
+            box-sizing: border-box; /* THE FIX */
+        }
+
+        /* Secret box stays on one line */
+        .secret-box {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        /* Button uses same box class + color */
+        .btn {
+            background: #00e5ff;
+            color: #000;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.2s ease-in-out;
+        }
+
+        .btn:hover {
+            background: #00ffff;
+            box-shadow: 0 0 12px rgba(0,255,255,0.6);
+        }
+    </style>
+</head>
+
 <body>
-    <h2>Set up MFA</h2>
 
-    {% if error %}
-        <p style="color:red">{{ error }}</p>
-    {% endif %}
+<div class="card">
+    <h2>MFA Setup</h2>
 
-    <p>Your MFA Secret (add to Google Authenticator):</p>
-    <p><b>{{ secret }}</b></p>
+    <p>Scan this secret in your authenticator app:</p>
 
-    <form method="post">
-        <input type="text" name="code" placeholder="Enter 6-digit code" required>
-        <button type="submit">Verify</button>
+    <!-- SECRET BOX -->
+    <div class="mfa-box secret-box">{{ secret }}</div>
+
+    <form method="POST">
+        <!-- 6 DIGIT INPUT -->
+        <input class="mfa-box" type="text" name="code" placeholder="Enter 6-digit code" required>
+
+        <!-- VERIFY BUTTON (NOW EXACT SAME LENGTH) -->
+        <button class="mfa-box btn" type="submit">Verify</button>
     </form>
+</div>
+
 </body>
 </html>

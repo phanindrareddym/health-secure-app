@@ -1,83 +1,167 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Login - Health App</title>
+    <meta charset="UTF-8">
+    <title>Secure Login - Health App</title>
+
     <style>
         body {
-            font-family: Arial, sans-serif;
-            background: #eef2f7;
+            margin: 0;
+            padding: 0;
+            height: 100vh;
             display: flex;
             justify-content: center;
             align-items: center;
-            height: 100vh;
-            margin: 0;
+
+            background: linear-gradient(135deg, #0a0f1f, #0d1b2a, #0f3d3e);
+            font-family: "Segoe UI", Arial, sans-serif;
+            color: #e0e0e0;
         }
+
         .card {
-            background: white;
-            padding: 30px;
-            border-radius: 12px;
-            box-shadow: 0 8px 20px rgba(0,0,0,0.08);
-            width: 320px;
+            width: 480px; /* MEDIUM SIZE */
+            padding: 35px; /* REDUCED PADDING */
+            border-radius: 14px;
+            background: rgba(255,255,255,0.08);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(0,255,255,0.25);
+            box-shadow: 0 0 20px rgba(0,255,255,0.15);
         }
+
         h2 {
-            margin-top: 0;
             text-align: center;
-            color: #2c3e50;
+            color: #00e5ff;
+            margin-bottom: 8px;
+            font-size: 26px;
         }
-        input {
-            width: 100%;
-            padding: 10px;
-            margin: 8px 0 16px;
-            border-radius: 6px;
-            border: 1px solid #ccd1d9;
+
+        .tagline {
+            text-align: center;
+            margin-bottom: 25px;
+            font-size: 14px;
+            color: #9fe8ff;
         }
-        button {
+
+        /* MASTER CLASS — all boxes identical */
+        .login-box-item {
             width: 100%;
-            padding: 10px;
-            background: #3498db;
-            color: white;
+            padding: 16px; /* MEDIUM SIZE */
+            border-radius: 10px;
+            background: rgba(255,255,255,0.15);
+            font-size: 18px; /* MEDIUM FONT */
+            margin-bottom: 20px;
+            color: #e0e0e0;
             border: none;
-            border-radius: 6px;
-            cursor: pointer;
+            display: block;
+            box-sizing: border-box;
+        }
+
+        input::placeholder {
+            color: #cfd6dd;
+        }
+
+        /* LOGIN BUTTON */
+        .btn-login {
+            background: #00e5ff;
+            color: #000;
             font-weight: bold;
+            cursor: pointer;
+            transition: 0.2s ease-in-out;
+            text-align: center;
         }
-        button:hover {
-            background: #2980b9;
+
+        .btn-login:hover {
+            background: #00ffff;
+            box-shadow: 0 0 10px rgba(0,255,255,0.6);
         }
+
+        /* MICROSOFT BUTTON */
+        .ms-login {
+            background: #ffffff;
+            color: #000;
+            font-weight: bold;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+            transition: 0.2s ease-in-out;
+        }
+
+        .ms-login:hover {
+            background: #f2f2f2;
+            box-shadow: 0 0 10px rgba(255,255,255,0.2);
+        }
+
+        .ms-logo {
+            width: 20px;
+            height: 20px;
+        }
+
+        /* ADMIN BUTTON */
+        .admin-btn {
+            background: #ff6b6b;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.2s ease-in-out;
+            text-align: center;
+        }
+
+        .admin-btn:hover {
+            background: #ff7f7f;
+            box-shadow: 0 0 10px rgba(255,100,100,0.4);
+        }
+
         .link {
             text-align: center;
             margin-top: 10px;
             font-size: 14px;
         }
+
+        .link a {
+            color: #00e5ff;
+            text-decoration: none;
+        }
+
         .error {
-            color: #e74c3c;
-            font-size: 14px;
-            margin-bottom: 10px;
+            color: #ff6b6b;
             text-align: center;
+            margin-bottom: 15px;
+            font-weight: bold;
         }
     </style>
 </head>
+
 <body>
+
 <div class="card">
-    <h2>Login</h2>
+
+    <h2>Secure Login</h2>
+    <div class="tagline"></div>
 
     {% if error %}
         <div class="error">{{ error }}</div>
     {% endif %}
 
     <form method="POST" action="/login">
-        <input type="text" name="username" placeholder="Enter username" required>
-        <input type="password" name="password" placeholder="Enter password" required>
-        <button type="submit">Login</button>
+        <input class="login-box-item" type="text" name="username" placeholder="Enter Username" required>
+        <input class="login-box-item" type="password" name="password" placeholder="Enter Password" required>
+
+        <button class="login-box-item btn-login" type="submit">Login</button>
     </form>
-    <a href="/auth/azure/login"
-        style="display:block; margin-top:10px; text-align:center; padding:8px; background:#2F2F2F; color:white; text-decoration:none; border-radius:4px;">
+
+    <a href="/auth/azure/login" class="login-box-item ms-login">
+        <img class="ms-logo" src="https://upload.wikimedia.org/wikipedia/commons/4/44/Microsoft_logo.svg">
         Sign in with Microsoft
     </a>
+
+    <a href="/admin/login" class="login-box-item admin-btn">Admin Login</a>
 
     <div class="link">
         Don't have an account? <a href="/register">Create one</a>
     </div>
 </div>
+
 </body>
 </html>
