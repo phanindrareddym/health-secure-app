@@ -7,10 +7,14 @@ services:
     envVars:
       - key: RENDER
         value: "true"
+
+      # Flask secrets
       - key: FLASK_SECRET_KEY
         sync: false
       - key: JWT_SECRET
         sync: false
+
+      # Azure
       - key: AZURE_CLIENT_ID
         sync: false
       - key: AZURE_CLIENT_SECRET
@@ -18,4 +22,14 @@ services:
       - key: AZURE_TENANT_ID
         sync: false
       - key: AZURE_REDIRECT_URI
+        sync: false
+
+      # Auth0 (MUST BE ADDED)
+      - key: AUTH0_DOMAIN
+        sync: false
+      - key: AUTH0_CLIENT_ID
+        sync: false
+      - key: AUTH0_CLIENT_SECRET
+        sync: false
+      - key: AUTH0_REDIRECT_URI
         sync: false
