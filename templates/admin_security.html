@@ -4,6 +4,10 @@
     <meta charset="UTF-8">
     <title>Admin Security Dashboard</title>
 
+    <!-- Leaflet Map CSS + JS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
     <style>
         body {
             margin: 0;
@@ -95,6 +99,15 @@
         .unblock-btn:hover {
             background: #ff1a1a;
         }
+
+        /* Map container */
+        #securityMap {
+            height: 500px;
+            border-radius: 10px;
+            margin-top: 20px;
+            box-shadow: 0 0 12px rgba(0,255,255,0.2);
+            border: 1px solid rgba(0,255,255,0.3);
+        }
     </style>
 </head>
 
@@ -177,7 +190,49 @@
             {% endif %}
         </div>
 
+        <!-- 🌍 WORLD MAP VIEW -->
+        <div class="section">
+            <h2>Global Security Map</h2>
+            <div id="securityMap"></div>
+        </div>
+
     </div>
+
+    <!-- MAP SCRIPT -->
+    <script>
+        var map = L.map('securityMap').setView([20, 0], 2);
+
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 18,
+            attribution: '© OpenStreetMap'
+        }).addTo(map);
+
+        var events = {{ security_events | tojson }};
+
+        events.forEach(function(evt) {
+            if (!evt.lat || !evt.lon) return;
+
+            var color =
+                evt.severity === "red" ? "red" :
+                evt.severity === "yellow" ? "orange" :
+                "green";
+
+            var marker = L.circleMarker([evt.lat, evt.lon], {
+                radius: 8,
+                color: color,
+                fillColor: color,
+                fillOpacity: 0.85
+            }).addTo(map);
+
+            marker.bindPopup(`
+                <b>${evt.type.toUpperCase()}</b><br>
+                <b>IP:</b> ${evt.ip}<br>
+                <b>Location:</b> ${evt.location}<br>
+                <b>Time:</b> ${evt.time}<br>
+                <b>Details:</b> ${evt.details}
+            `);
+        });
+    </script>
 
 </body>
 </html>
