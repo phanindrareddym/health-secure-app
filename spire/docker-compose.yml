@@ -1,0 +1,19 @@
+services:
+  spire-server:
+    image: ghcr.io/spiffe/spire-server:1.9.0
+    container_name: spire-server
+
+    entrypoint: ["/opt/spire/bin/spire-server"]
+    command: ["run", "-config", "/run/spire/server.conf"]
+
+    volumes:
+      - ./server.conf:/run/spire/server.conf:ro
+      - ./bootstrap:/run/spire/bootstrap:ro
+      - spire-server-data:/run/spire/data
+
+    ports:
+      - "8081:8081"
+    restart: unless-stopped
+
+volumes:
+  spire-server-data:
