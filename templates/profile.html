@@ -57,27 +57,23 @@
     <div class="profile-item">
         <span class="label">Longitude:</span> {{ location.lon }}
     </div>
+
     <div class="profile-item">
-    <span class="label">Browser:</span> {{ device.browser }}
+        <span class="label">Browser:</span> {{ device.browser }}
     </div>
 
     <div class="profile-item">
-    <span class="label">Operating System:</span> {{ device.os }}
+        <span class="label">Operating System:</span> {{ device.os }}
     </div>
 
     <div class="profile-item">
-    <span class="label">Device:</span> {{ device.device }}
+        <span class="label">Device:</span> {{ device.device }}
     </div>
 
     <div class="profile-item">
-    <span class="label">Device Type:</span>
-    {% if device.is_mobile %} Mobile
-    {% elif device.is_tablet %} Tablet
-    {% elif device.is_pc %} Desktop
-    {% else %} Unknown
-    {% endif %}
+        <span class="label">Device Type:</span> {{ device_type }}
     </div>
-    
+
     <h3 style="margin-top:30px; color:#2c3e50;">Login History</h3>
 
     {% if history %}
@@ -92,7 +88,7 @@
 
         {% for entry in history|reverse %}
         <tr>
-            <td style="padding:8px;">{{ entry.time|fmt_time }}</td>
+            <td style="padding:8px;">{{ entry.time }}</td>
             <td style="padding:8px;">{{ entry.ip }}</td>
             <td style="padding:8px;">{{ entry.browser }}</td>
             <td style="padding:8px;">{{ entry.os }}</td>
