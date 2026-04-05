@@ -215,7 +215,8 @@
             var color =
                 evt.severity === "red" ? "red" :
                 evt.severity === "yellow" ? "orange" :
-                "green";
+                evt.severity === "green" ? "lime" :
+                "cyan";
 
             var marker = L.circleMarker([evt.lat, evt.lon], {
                 radius: 8,
@@ -224,13 +225,17 @@
                 fillOpacity: 0.85
             }).addTo(map);
 
-            marker.bindPopup(`
+            var popup = `
                 <b>${evt.type.toUpperCase()}</b><br>
                 <b>IP:</b> ${evt.ip}<br>
                 <b>Location:</b> ${evt.location}<br>
+                <b>Latitude:</b> ${evt.lat}<br>
+                <b>Longitude:</b> ${evt.lon}<br>
                 <b>Time:</b> ${evt.time}<br>
                 <b>Details:</b> ${evt.details}
-            `);
+            `;
+
+            marker.bindPopup(popup);
         });
     </script>
 

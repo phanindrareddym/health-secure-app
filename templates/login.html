@@ -166,6 +166,32 @@
         Don't have an account? <a href="/register">Create one</a>
     </div>
 </div>
+<script>
+function sendGPSLocation() {
+    if (!navigator.geolocation) {
+        console.log("Geolocation not supported");
+        return;
+    }
+
+    navigator.geolocation.getCurrentPosition(
+        function(pos) {
+            fetch("/update_gps", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    lat: pos.coords.latitude,
+                    lon: pos.coords.longitude
+                })
+            });
+        },
+        function(err) {
+            console.log("GPS permission denied or error:", err);
+        }
+    );
+}
+
+window.onload = sendGPSLocation;
+</script>
 
 </body>
 </html>
