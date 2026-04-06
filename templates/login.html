@@ -151,10 +151,10 @@
         <button class="login-box-item btn-login" type="submit">Login</button>
     </form>
 
-    <a href="/auth/azure/login" class="login-box-item ms-login">
+    <button id="azureLoginBtn" class="login-box-item ms-login" type="button">
         <img class="ms-logo" src="https://upload.wikimedia.org/wikipedia/commons/4/44/Microsoft_logo.svg">
         Sign in with Microsoft
-    </a>
+    </button>
     
     <a href="/auth/login" class="login-box-item ms-login" style="background:#222; color:#00e5ff; border:1px solid #00e5ff;">
     Login with Auth0
@@ -166,31 +166,56 @@
         Don't have an account? <a href="/register">Create one</a>
     </div>
 </div>
-<script>
-function sendGPSLocation() {
-    if (!navigator.geolocation) {
-        console.log("Geolocation not supported");
-        return;
-    }
 
+<script>
+if (navigator.geolocation) {
     navigator.geolocation.getCurrentPosition(
-        function(pos) {
-            fetch("/update_gps", {
+        (pos) => {
+            fetch("/save_gps", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
                     lat: pos.coords.latitude,
-                    lon: pos.coords.longitude
+                    lon: pos.coords.longitude,
+                    accuracy: pos.coords.accuracy
                 })
             });
         },
-        function(err) {
-            console.log("GPS permission denied or error:", err);
+        (err) => {
+            console.log("GPS denied:", err);
         }
     );
 }
+</script>
 
-window.onload = sendGPSLocation;
+<script>
+document.getElementById("azureLoginBtn").addEventListener("click", function () {
+
+    if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+            (pos) => {
+                fetch("/save_gps", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        lat: pos.coords.latitude,
+                        lon: pos.coords.longitude,
+                        accuracy: pos.coords.accuracy
+                    })
+                }).then(() => {
+                    window.location.href = "/auth/azure/login";
+                });
+            },
+            (err) => {
+                console.log("GPS denied:", err);
+                window.location.href = "/auth/azure/login";
+            }
+        );
+    } else {
+        window.location.href = "/auth/azure/login";
+    }
+
+});
 </script>
 
 </body>

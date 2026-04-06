@@ -8,6 +8,14 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
+    <!-- MarkerCluster -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css" />
+    <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
+
+    <!-- Heatmap plugin -->
+    <script src="https://unpkg.com/leaflet.heat/dist/leaflet-heat.js"></script>
+
     <style>
         body {
             margin: 0;
@@ -46,15 +54,98 @@
             text-decoration: underline;
         }
 
-        .container {
-            width: 90%;
-            margin: 30px auto;
+        .main-layout {
+            display: flex;
+            height: calc(100vh - 72px);
+        }
+
+        .sidebar {
+            width: 320px;
+            background: #11182f;
+            border-right: 1px solid rgba(0,255,255,0.2);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .sidebar-header {
+            padding: 16px;
+            border-bottom: 1px solid rgba(0,255,255,0.3);
+        }
+
+        .sidebar-header h2 {
+            margin: 0;
+            color: cyan;
+            font-size: 18px;
+        }
+
+        .sidebar-list {
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        .user-row {
+            padding: 10px 14px;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            transition: background 0.15s ease;
+        }
+
+        .user-row:hover {
+            background: #1a2340;
+        }
+
+        .user-row.active {
+            background: #1f2b4f;
+        }
+
+        .user-main-line {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.95em;
+        }
+
+        .user-sub-line {
+            font-size: 0.8em;
+            color: #bbbbbb;
+        }
+
+        .severity-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            display: inline-block;
+        }
+
+        .severity-green { background: #00ff99; }
+        .severity-yellow { background: #ffcc00; }
+        .severity-red { background: #ff4d4d; }
+
+        .provider-pill {
+            padding: 2px 6px;
+            border-radius: 10px;
+            font-size: 0.75em;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+
+        .provider-azure { color: #00a4ef; border-color: #00a4ef; }
+        .provider-auth0 { color: #eb5424; border-color: #eb5424; }
+        .provider-local { color: #cccccc; border-color: #cccccc; }
+
+        .content {
+            flex: 1;
+            padding: 16px 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
         }
 
         .section {
             background: #141b33;
-            padding: 20px;
-            margin-bottom: 25px;
+            padding: 16px;
             border-radius: 10px;
             border: 1px solid rgba(0,255,255,0.2);
             box-shadow: 0 0 12px rgba(0,255,255,0.1);
@@ -62,18 +153,105 @@
 
         .section h2 {
             color: cyan;
-            margin-bottom: 15px;
+            margin: 0 0 10px 0;
             border-bottom: 1px solid rgba(0,255,255,0.3);
-            padding-bottom: 8px;
+            padding-bottom: 6px;
+            font-size: 18px;
+        }
+
+        .filters {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 10px;
+            font-size: 0.9em;
+        }
+
+        .filters label {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .filters select {
+            background: #11182f;
+            color: #e0e0e0;
+            border: 1px solid rgba(0,255,255,0.4);
+            border-radius: 6px;
+            padding: 4px 6px;
+            font-size: 0.9em;
+        }
+
+        #securityMap {
+            height: 420px;
+            border-radius: 10px;
+            margin-top: 8px;
+            box-shadow: 0 0 12px rgba(0,255,255,0.2);
+            border: 1px solid rgba(0,255,255,0.3);
+        }
+
+        .timeline-controls {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 10px;
+            font-size: 0.9em;
+        }
+
+        .timeline-controls input[type="range"] {
+            flex: 1;
+        }
+
+        .btn {
+            background: #11182f;
+            color: cyan;
+            border: 1px solid rgba(0,255,255,0.6);
+            border-radius: 6px;
+            padding: 6px 10px;
+            cursor: pointer;
+            font-size: 0.85em;
+        }
+
+        .btn:hover {
+            background: #182243;
+        }
+
+        .btn.active {
+            background: cyan;
+            color: #11182f;
         }
 
         .event {
             padding: 12px;
             border-bottom: 1px solid rgba(255,255,255,0.1);
+            cursor: pointer;
+            transition: background 0.2s ease;
         }
 
-        .event:last-child {
-            border-bottom: none;
+        .event:hover {
+            background: #1a2340;
+        }
+
+        .event-header {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .event-details {
+            display: none;
+            margin-top: 10px;
+            font-size: 0.9em;
+            color: #cccccc;
+            line-height: 1.4em;
+        }
+
+        .event.open .event-details {
+            display: block;
+        }
+
+        .event-details-row {
+            margin-bottom: 6px;
         }
 
         .red { color: #ff4d4d; font-weight: bold; }
@@ -99,15 +277,6 @@
         .unblock-btn:hover {
             background: #ff1a1a;
         }
-
-        /* Map container */
-        #securityMap {
-            height: 500px;
-            border-radius: 10px;
-            margin-top: 20px;
-            box-shadow: 0 0 12px rgba(0,255,255,0.2);
-            border: 1px solid rgba(0,255,255,0.3);
-        }
     </style>
 </head>
 
@@ -123,120 +292,467 @@
         </div>
     </div>
 
-    <div class="container">
+    <div class="main-layout">
 
-        <!-- SECURITY EVENTS -->
-        <div class="section">
-            <h2>Security Events</h2>
-
-            {% if security_events %}
-                {% for e in security_events %}
-                    <div class="event">
-                        <span class="{{ e.severity }}">{{ e.severity.upper() }}</span> —
-                        <strong>{{ e.ip }}</strong> —
-                        {{ e.details }}
-
-                        {% if e.location %}
-                            <br><strong>Location:</strong> {{ e.location }}
-                        {% endif %}
-
-                        {% if e.lat and e.lon %}
-                            <br><a class="map-link" href="https://www.google.com/maps?q={{ e.lat }},{{ e.lon }}" target="_blank">
-                                View on Map
-                            </a>
-                        {% endif %}
-                    </div>
-                {% endfor %}
-            {% else %}
-                <p>No events yet.</p>
-            {% endif %}
+        <!-- LEFT SIDEBAR: USERS / EVENTS -->
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <h2>Users / Events</h2>
+            </div>
+            <div class="sidebar-list" id="userList">
+                <!-- Filled by JS -->
+            </div>
         </div>
 
-        <!-- IP BEHAVIOR -->
-        <div class="section">
-            <h2>IP Behavior</h2>
+        <!-- RIGHT CONTENT -->
+        <div class="content">
 
-            {% if ip_behavior %}
-                {% for ip, data in ip_behavior.items() %}
-                    <div class="event">
-                        <strong>{{ ip }}</strong><br>
-                        Risk Score: {{ data.risk_score }}<br>
-                        Suspicious Count: {{ data.suspicious_count }}<br>
-                        Requests: {{ data.request_count }}<br>
-                        Status: {{ data.risk }}
-                    </div>
-                {% endfor %}
-            {% else %}
-                <p>No IP behavior data.</p>
-            {% endif %}
+            <!-- SECURITY EVENTS (collapsible list) -->
+            <div class="section">
+                <h2>Security Events</h2>
+
+                {% if security_events %}
+                    {% for e in security_events %}
+                        {% set ip_data = ip_behavior.get(e.ip) if ip_behavior else None %}
+
+                        <div class="event">
+                            <div class="event-header">
+                                <span class="{{ e.severity }}">{{ e.severity.upper() }}</span> —
+                                {{ e.details }}
+                            </div>
+
+                            <div class="event-details">
+
+                                <div class="event-details-row">
+                                    <strong>Time:</strong> {{ e.time }}
+                                </div>
+
+                                <div class="event-details-row">
+                                    <strong>IP:</strong> {{ e.ip }}
+                                </div>
+
+                                <div class="event-details-row">
+                                    <strong>Location:</strong> {{ e.location or "Unknown" }}
+                                </div>
+
+                                {% if e.lat and e.lon %}
+                                <div class="event-details-row">
+                                    <strong>Latitude:</strong> {{ e.lat }} |
+                                    <strong>Longitude:</strong> {{ e.lon }}
+                                    &nbsp;·&nbsp;
+                                    <a class="map-link" href="https://www.google.com/maps?q={{ e.lat }},{{ e.lon }}" target="_blank">
+                                        View on Map
+                                    </a>
+                                </div>
+                                {% endif %}
+
+                                <div class="event-details-row">
+                                    <strong>Device:</strong>
+                                    {{ e.device or "Unknown device" }}
+                                    ({{ e.os or "Unknown OS" }}, {{ e.browser or "Unknown browser" }})
+                                </div>
+
+                                <div class="event-details-row">
+                                    <strong>MFA:</strong>
+                                    {% if e.mfa_enabled %} Enabled {% else %} Disabled {% endif %}
+                                </div>
+
+                                <div class="event-details-row">
+                                    <strong>ISP:</strong> {{ e.isp or "Unknown" }} |
+                                    <strong>ASN:</strong> {{ e.asn or "Unknown" }}
+                                </div>
+
+                                {% if ip_data %}
+                                <div class="event-details-row">
+                                    <strong>Risk Score:</strong> {{ ip_data.risk_score }} |
+                                    <strong>Suspicious Count:</strong> {{ ip_data.suspicious_count }} |
+                                    <strong>Requests:</strong> {{ ip_data.request_count }} |
+                                    <strong>Status:</strong> {{ ip_data.risk }}
+                                </div>
+                                {% endif %}
+
+                            </div>
+                        </div>
+
+                    {% endfor %}
+                {% else %}
+                    <p>No events yet.</p>
+                {% endif %}
+            </div>
+
+            <!-- GLOBAL SECURITY MAP -->
+            <div class="section">
+                <h2>Global Security Map</h2>
+
+                <div class="filters">
+                    <label>
+                        Provider:
+                        <select id="filterProvider">
+                            <option value="all">All</option>
+                            <option value="azure">Azure</option>
+                            <option value="auth0">Auth0</option>
+                            <option value="local">Local</option>
+                        </select>
+                    </label>
+
+                    <label>
+                        Severity:
+                        <select id="filterSeverity">
+                            <option value="all">All</option>
+                            <option value="green">Green</option>
+                            <option value="yellow">Yellow</option>
+                            <option value="red">Red</option>
+                        </select>
+                    </label>
+
+                    <label>
+                        MFA:
+                        <select id="filterMfa">
+                            <option value="all">All</option>
+                            <option value="enabled">Enabled</option>
+                            <option value="disabled">Disabled</option>
+                        </select>
+                    </label>
+                </div>
+
+                <div id="securityMap"></div>
+
+                <div class="timeline-controls">
+                    <button class="btn" id="playBtn">▶ Replay Logins</button>
+                    <button class="btn" id="heatmapBtn">Heatmap Mode</button>
+                    <span id="timelineLabel">Timeline: All</span>
+                    <input type="range" id="timelineRange" min="0" max="0" value="0">
+                </div>
+            </div>
+
+            <!-- BLOCKED IPs -->
+            <div class="section">
+                <h2>Blocked IPs</h2>
+
+                {% if blocked_ips %}
+                    {% for ip, until in blocked_ips.items() %}
+                        <div class="event">
+                            <strong>{{ ip }}</strong> — Blocked until {{ until | fmt_time }}
+
+                            <form action="/admin/unblock/{{ ip }}" method="POST" style="display:inline;">
+                                <button class="unblock-btn">Unblock</button>
+                            </form>
+                        </div>
+                    {% endfor %}
+                {% else %}
+                    <p>No blocked IPs.</p>
+                {% endif %}
+            </div>
+
         </div>
-
-        <!-- BLOCKED IPs -->
-        <div class="section">
-            <h2>Blocked IPs</h2>
-
-            {% if blocked_ips %}
-                {% for ip, until in blocked_ips.items() %}
-                    <div class="event">
-                        <strong>{{ ip }}</strong> — Blocked until {{ until | fmt_time }}
-
-                        <form action="/admin/unblock/{{ ip }}" method="POST" style="display:inline;">
-                            <button class="unblock-btn">Unblock</button>
-                        </form>
-                    </div>
-                {% endfor %}
-            {% else %}
-                <p>No blocked IPs.</p>
-            {% endif %}
-        </div>
-
-        <!-- 🌍 WORLD MAP VIEW -->
-        <div class="section">
-            <h2>Global Security Map</h2>
-            <div id="securityMap"></div>
-        </div>
-
     </div>
 
-    <!-- MAP SCRIPT -->
+    <!-- MAP + SIDEBAR + FILTERS SCRIPT -->
     <script>
-        var map = L.map('securityMap').setView([20, 0], 2);
+        // Collapsible event rows
+        document.querySelectorAll('.event').forEach(function(row) {
+            row.addEventListener('click', function(ev) {
+                if (ev.target.tagName === 'A' || ev.target.closest('form')) return;
+                row.classList.toggle('open');
+            });
+        });
+
+        var rawEvents = {{ security_events | tojson }};
+        var map = L.map('securityMap', {
+            worldCopyJump: false,
+            maxBounds: [
+                [-85, -180],
+                [85, 180]
+            ],
+            maxBoundsViscosity: 1.0
+        }).setView([20, 0], 2);
 
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             maxZoom: 18,
+            noWrap: true,
+            bounds: [
+                [-85, -180],
+                [85, 180]
+            ],
             attribution: '© OpenStreetMap'
         }).addTo(map);
 
-        var events = {{ security_events | tojson }};
+        var markerCluster = L.markerClusterGroup();
+        var heatLayer = null;
+        var markers = [];
+        var filteredMarkers = [];
+        var sidebarList = document.getElementById('userList');
 
-        events.forEach(function(evt) {
-            if (!evt.lat || !evt.lon) return;
+        function getSeverityColor(sev) {
+            if (sev === 'red') return 'red';
+            if (sev === 'yellow') return 'orange';
+            if (sev === 'green') return 'lime';
+            return 'cyan';
+        }
 
-            var color =
-                evt.severity === "red" ? "red" :
-                evt.severity === "yellow" ? "orange" :
-                evt.severity === "green" ? "lime" :
-                "cyan";
+        function getSeverityClass(sev) {
+            if (sev === 'red') return 'severity-red';
+            if (sev === 'yellow') return 'severity-yellow';
+            if (sev === 'green') return 'severity-green';
+            return 'severity-green';
+        }
 
-            var marker = L.circleMarker([evt.lat, evt.lon], {
-                radius: 8,
-                color: color,
-                fillColor: color,
-                fillOpacity: 0.85
-            }).addTo(map);
+        function getProviderKey(evt) {
+            var p = (evt.provider || '').toLowerCase();
+            if (p.includes('azure')) return 'azure';
+            if (p.includes('auth0')) return 'auth0';
+            if (p.includes('local')) return 'local';
+            return 'local';
+        }
 
-            var popup = `
-                <b>${evt.type.toUpperCase()}</b><br>
-                <b>IP:</b> ${evt.ip}<br>
-                <b>Location:</b> ${evt.location}<br>
-                <b>Latitude:</b> ${evt.lat}<br>
-                <b>Longitude:</b> ${evt.lon}<br>
-                <b>Time:</b> ${evt.time}<br>
-                <b>Details:</b> ${evt.details}
+        function getProviderLabel(evt) {
+            var p = (evt.provider || '').toLowerCase();
+            if (p.includes('azure')) return 'Azure';
+            if (p.includes('auth0')) return 'Auth0';
+            if (p.includes('local')) return 'Local';
+            return 'Local';
+        }
+
+        function buildPopup(evt) {
+            return `
+                <b>${(evt.type || 'login').toUpperCase()}</b><br>
+                <b>User:</b> ${evt.username || evt.user || 'Unknown'}<br>
+                <b>Provider:</b> ${evt.provider || 'Unknown'}<br><br>
+
+                <b>Time:</b> ${evt.time || 'Unknown'}<br><br>
+
+                <b>IP:</b> ${evt.ip || 'Unknown'}<br>
+                <b>Location:</b> ${evt.location || 'Unknown'}<br>
+                <b>Lat:</b> ${evt.lat || 'N/A'} |
+                <b>Lon:</b> ${evt.lon || 'N/A'}<br><br>
+
+                <b>Device:</b> ${evt.device || 'Unknown'}<br>
+                <b>OS:</b> ${evt.os || 'Unknown'}<br>
+                <b>Browser:</b> ${evt.browser || 'Unknown'}<br>
+                <b>MFA:</b> ${evt.mfa_enabled ? 'Enabled' : 'Disabled'}<br><br>
+
+                <b>ISP:</b> ${evt.isp || 'Unknown'}<br>
+                <b>ASN:</b> ${evt.asn || 'Unknown'}<br><br>
+
+                <b>Risk Score:</b> ${evt.risk_score || 0}<br>
+                <b>Suspicious Count:</b> ${evt.suspicious_count || 0}<br>
+                <b>Requests:</b> ${evt.requests || 0}<br>
+                <b>Status:</b> ${evt.status || 'normal'}<br><br>
+
+                <b>Details:</b> ${evt.details || ''}
             `;
+        }
 
-            marker.bindPopup(popup);
+        function buildSidebar() {
+            sidebarList.innerHTML = '';
+            filteredMarkers.forEach(function(item, idx) {
+                var evt = item.event;
+                var row = document.createElement('div');
+                row.className = 'user-row';
+                row.dataset.index = idx;
+
+                var sevClass = getSeverityClass(evt.severity || 'green');
+                var providerKey = getProviderKey(evt);
+                var providerLabel = getProviderLabel(evt);
+
+                var main = document.createElement('div');
+                main.className = 'user-main-line';
+                main.innerHTML = `
+                    <span class="severity-dot ${sevClass}"></span>
+                    <span>${evt.username || evt.user || evt.ip || 'Unknown'}</span>
+                    <span class="provider-pill provider-${providerKey}">${providerLabel}</span>
+                `;
+
+                var sub = document.createElement('div');
+                sub.className = 'user-sub-line';
+                sub.textContent = (evt.location || 'Unknown location') + ' • ' + (evt.time || '');
+
+                row.appendChild(main);
+                row.appendChild(sub);
+
+                row.addEventListener('click', function() {
+                    document.querySelectorAll('.user-row').forEach(function(r) {
+                        r.classList.remove('active');
+                    });
+                    row.classList.add('active');
+                    map.setView([evt.lat || 0, evt.lon || 0], 5);
+                    item.marker.openPopup();
+                });
+
+                sidebarList.appendChild(row);
+            });
+        }
+
+        function applyFilters() {
+            var providerFilter = document.getElementById('filterProvider').value;
+            var severityFilter = document.getElementById('filterSeverity').value;
+            var mfaFilter = document.getElementById('filterMfa').value;
+
+            markerCluster.clearLayers();
+            filteredMarkers = [];
+
+            markers.forEach(function(item) {
+                var evt = item.event;
+
+                var providerKey = getProviderKey(evt);
+                if (providerFilter !== 'all' && providerFilter !== providerKey) return;
+
+                var sev = (evt.severity || 'green').toLowerCase();
+                if (severityFilter !== 'all' && severityFilter !== sev) return;
+
+                var mfa = evt.mfa_enabled ? 'enabled' : 'disabled';
+                if (mfaFilter !== 'all' && mfaFilter !== mfa) return;
+
+                markerCluster.addLayer(item.marker);
+                filteredMarkers.push(item);
+            });
+
+            if (!map.hasLayer(markerCluster)) {
+                markerCluster.addTo(map);
+            }
+
+            buildSidebar();
+            buildHeatLayer();
+        }
+
+        function buildHeatLayer() {
+            if (heatLayer) {
+                map.removeLayer(heatLayer);
+                heatLayer = null;
+            }
+
+            var heatData = filteredMarkers
+                .filter(function(item) { return item.event.lat && item.event.lon; })
+                .map(function(item) {
+                    var e = item.event;
+                    var weight = e.risk_score ? Math.min(e.risk_score / 10, 1) : 0.2;
+                    return [e.lat, e.lon, weight];
+                });
+
+            if (heatData.length > 0) {
+                heatLayer = L.heatLayer(heatData, {
+                    radius: 25,
+                    blur: 15,
+                    maxZoom: 10
+                });
+            }
+        }
+
+        function initMarkers() {
+            markers = [];
+            rawEvents.forEach(function(evt, index) {
+                if (!evt.lat || !evt.lon) return;
+
+                var color = getSeverityColor(evt.severity || 'green');
+
+                var marker = L.circleMarker([evt.lat, evt.lon], {
+                    radius: 8,
+                    color: color,
+                    fillColor: color,
+                    fillOpacity: 0.85
+                });
+
+                marker.bindPopup(buildPopup(evt));
+
+                markers.push({ event: evt, marker: marker, index: index });
+            });
+
+            applyFilters();
+        }
+
+        // Timeline + replay
+        var timelineRange = document.getElementById('timelineRange');
+        var timelineLabel = document.getElementById('timelineLabel');
+        var playBtn = document.getElementById('playBtn');
+        var heatmapBtn = document.getElementById('heatmapBtn');
+        var replayInterval = null;
+        var heatmapMode = false;
+
+        function initTimeline() {
+            var maxIndex = markers.length > 0 ? markers.length - 1 : 0;
+            timelineRange.min = 0;
+            timelineRange.max = maxIndex;
+            timelineRange.value = maxIndex;
+            timelineLabel.textContent = 'Timeline: All';
+        }
+
+        function applyTimeline(limitIndex) {
+            markerCluster.clearLayers();
+            filteredMarkers = [];
+
+            markers.forEach(function(item) {
+                if (item.index <= limitIndex) {
+                    markerCluster.addLayer(item.marker);
+                    filteredMarkers.push(item);
+                }
+            });
+
+            if (!map.hasLayer(markerCluster)) {
+                markerCluster.addTo(map);
+            }
+
+            buildSidebar();
+            buildHeatLayer();
+
+            if (limitIndex >= markers.length - 1) {
+                timelineLabel.textContent = 'Timeline: All';
+            } else {
+                timelineLabel.textContent = 'Timeline: Up to event #' + (limitIndex + 1);
+            }
+        }
+
+        timelineRange.addEventListener('input', function() {
+            var val = parseInt(timelineRange.value, 10);
+            applyTimeline(val);
         });
+
+        playBtn.addEventListener('click', function() {
+            if (replayInterval) {
+                clearInterval(replayInterval);
+                replayInterval = null;
+                playBtn.textContent = '▶ Replay Logins';
+                return;
+            }
+
+            playBtn.textContent = '⏸ Stop Replay';
+            var idx = 0;
+            timelineRange.value = 0;
+            applyTimeline(0);
+
+            replayInterval = setInterval(function() {
+                if (idx >= markers.length - 1) {
+                    clearInterval(replayInterval);
+                    replayInterval = null;
+                    playBtn.textContent = '▶ Replay Logins';
+                    return;
+                }
+                idx += 1;
+                timelineRange.value = idx;
+                applyTimeline(idx);
+            }, 700);
+        });
+
+        heatmapBtn.addEventListener('click', function() {
+            heatmapMode = !heatmapMode;
+            if (heatmapMode) {
+                heatmapBtn.classList.add('active');
+                heatmapBtn.textContent = 'Markers Mode';
+                map.removeLayer(markerCluster);
+                if (heatLayer) heatLayer.addTo(map);
+            } else {
+                heatmapBtn.classList.remove('active');
+                heatmapBtn.textContent = 'Heatmap Mode';
+                if (heatLayer) map.removeLayer(heatLayer);
+                markerCluster.addTo(map);
+            }
+        });
+
+        document.getElementById('filterProvider').addEventListener('change', applyFilters);
+        document.getElementById('filterSeverity').addEventListener('change', applyFilters);
+        document.getElementById('filterMfa').addEventListener('change', applyFilters);
+
+        initMarkers();
+        initTimeline();
     </script>
 
 </body>

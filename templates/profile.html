@@ -6,22 +6,31 @@
         body {
             font-family: Arial, sans-serif;
             margin: 40px;
+            background: #f0f2f5;
         }
         .profile-card {
-            max-width: 500px;
+            max-width: 650px;
             margin: auto;
             padding: 25px;
             border-radius: 12px;
-            background: #f8f9fa;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            background: #ffffff;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
         }
         .profile-card h2 {
             margin-bottom: 20px;
             color: #2c3e50;
         }
+        .section-title {
+            margin-top: 25px;
+            margin-bottom: 10px;
+            font-size: 18px;
+            color: #2c3e50;
+            border-bottom: 1px solid #e0e0e0;
+            padding-bottom: 5px;
+        }
         .profile-item {
-            margin-bottom: 12px;
-            font-size: 16px;
+            margin-bottom: 10px;
+            font-size: 15px;
         }
         .label {
             font-weight: bold;
@@ -34,29 +43,52 @@
 <div class="profile-card">
     <h2>My Profile</h2>
 
+    <!-- Identity -->
+    <div class="section-title">Account Information</div>
+
+    <div class="profile-item">
+        <span class="label">Name:</span> {{ name }}
+    </div>
+
+    <div class="profile-item">
+        <span class="label">Email:</span> {{ email }}
+    </div>
+
     <div class="profile-item">
         <span class="label">Username:</span> {{ username }}
     </div>
 
     <div class="profile-item">
-        <span class="label">Admin:</span> {{ "Yes" if is_admin else "No" }}
+        <span class="label">Role:</span> {{ role }}
     </div>
 
     <div class="profile-item">
-        <span class="label">Client IP:</span> {{ client_ip }}
+        <span class="label">MFA Enabled:</span> {{ "Yes" if mfa_enabled else "No" }}
     </div>
 
+    {% if last_login_event %}
     <div class="profile-item">
-        <span class="label">Location:</span> {{ location.location }}
+        <span class="label">Last Login:</span> {{ last_login_event }}
     </div>
+    {% endif %}
 
-    <div class="profile-item">
-        <span class="label">Latitude:</span> {{ location.lat }}
-    </div>
+    <!-- Session -->
+    <div class="section-title">Session Details</div>
 
+    {% if login_time %}
     <div class="profile-item">
-        <span class="label">Longitude:</span> {{ location.lon }}
+        <span class="label">Session Start:</span> {{ login_time }}
     </div>
+    {% endif %}
+
+    {% if last_activity %}
+    <div class="profile-item">
+        <span class="label">Last Activity:</span> {{ last_activity }}
+    </div>
+    {% endif %}
+
+    <!-- Device -->
+    <div class="section-title">Device Information</div>
 
     <div class="profile-item">
         <span class="label">Browser:</span> {{ device.browser }}
@@ -67,38 +99,8 @@
     </div>
 
     <div class="profile-item">
-        <span class="label">Device:</span> {{ device.device }}
-    </div>
-
-    <div class="profile-item">
         <span class="label">Device Type:</span> {{ device_type }}
     </div>
-
-    <h3 style="margin-top:30px; color:#2c3e50;">Login History</h3>
-
-    {% if history %}
-    <table style="width:100%; border-collapse: collapse; margin-top:10px;">
-        <tr style="background:#eaeaea;">
-            <th style="padding:8px; text-align:left;">Time</th>
-            <th style="padding:8px; text-align:left;">IP</th>
-            <th style="padding:8px; text-align:left;">Browser</th>
-            <th style="padding:8px; text-align:left;">OS</th>
-            <th style="padding:8px; text-align:left;">Device</th>
-        </tr>
-
-        {% for entry in history|reverse %}
-        <tr>
-            <td style="padding:8px;">{{ entry.time }}</td>
-            <td style="padding:8px;">{{ entry.ip }}</td>
-            <td style="padding:8px;">{{ entry.browser }}</td>
-            <td style="padding:8px;">{{ entry.os }}</td>
-            <td style="padding:8px;">{{ entry.device }}</td>
-        </tr>
-        {% endfor %}
-    </table>
-    {% else %}
-    <p>No login history available.</p>
-    {% endif %}
 
 </div>
 
