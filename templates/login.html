@@ -12,55 +12,46 @@
             display: flex;
             justify-content: center;
             align-items: center;
-
             background: linear-gradient(135deg, #0a0f1f, #0d1b2a, #0f3d3e);
             font-family: "Segoe UI", Arial, sans-serif;
             color: #e0e0e0;
         }
-
         .card {
-            width: 480px; /* MEDIUM SIZE */
-            padding: 35px; /* REDUCED PADDING */
+            width: 480px;
+            padding: 35px;
             border-radius: 14px;
             background: rgba(255,255,255,0.08);
             backdrop-filter: blur(12px);
             border: 1px solid rgba(0,255,255,0.25);
             box-shadow: 0 0 20px rgba(0,255,255,0.15);
         }
-
         h2 {
             text-align: center;
             color: #00e5ff;
             margin-bottom: 8px;
             font-size: 26px;
         }
-
         .tagline {
             text-align: center;
             margin-bottom: 25px;
             font-size: 14px;
             color: #9fe8ff;
         }
-
-        /* MASTER CLASS — all boxes identical */
         .login-box-item {
             width: 100%;
-            padding: 16px; /* MEDIUM SIZE */
+            padding: 16px;
             border-radius: 10px;
             background: rgba(255,255,255,0.15);
-            font-size: 18px; /* MEDIUM FONT */
+            font-size: 18px;
             margin-bottom: 20px;
             color: #e0e0e0;
             border: none;
             display: block;
             box-sizing: border-box;
         }
-
         input::placeholder {
             color: #cfd6dd;
         }
-
-        /* LOGIN BUTTON */
         .btn-login {
             background: #00e5ff;
             color: #000;
@@ -69,13 +60,10 @@
             transition: 0.2s ease-in-out;
             text-align: center;
         }
-
         .btn-login:hover {
             background: #00ffff;
             box-shadow: 0 0 10px rgba(0,255,255,0.6);
         }
-
-        /* MICROSOFT BUTTON */
         .ms-login {
             background: #ffffff;
             color: #000;
@@ -87,18 +75,14 @@
             cursor: pointer;
             transition: 0.2s ease-in-out;
         }
-
         .ms-login:hover {
             background: #f2f2f2;
             box-shadow: 0 0 10px rgba(255,255,255,0.2);
         }
-
         .ms-logo {
             width: 20px;
             height: 20px;
         }
-
-        /* ADMIN BUTTON */
         .admin-btn {
             background: #ff6b6b;
             color: white;
@@ -107,23 +91,19 @@
             transition: 0.2s ease-in-out;
             text-align: center;
         }
-
         .admin-btn:hover {
             background: #ff7f7f;
             box-shadow: 0 0 10px rgba(255,100,100,0.4);
         }
-
         .link {
             text-align: center;
             margin-top: 10px;
             font-size: 14px;
         }
-
         .link a {
             color: #00e5ff;
             text-decoration: none;
         }
-
         .error {
             color: #ff6b6b;
             text-align: center;
@@ -144,10 +124,9 @@
         <div class="error">{{ error }}</div>
     {% endif %}
 
-    <form method="POST" action="/login">
+    <form method="POST" action="/login" id="normalLoginForm">
         <input class="login-box-item" type="text" name="username" placeholder="Enter Username" required>
         <input class="login-box-item" type="password" name="password" placeholder="Enter Password" required>
-
         <button class="login-box-item btn-login" type="submit">Login</button>
     </form>
 
@@ -155,10 +134,11 @@
         <img class="ms-logo" src="https://upload.wikimedia.org/wikipedia/commons/4/44/Microsoft_logo.svg">
         Sign in with Microsoft
     </button>
-    
-    <a href="/auth/login" class="login-box-item ms-login" style="background:#222; color:#00e5ff; border:1px solid #00e5ff;">
-    Login with Auth0
-    </a>
+
+    <button id="auth0LoginBtn" class="login-box-item ms-login" type="button"
+            style="background:#222; color:#00e5ff; border:1px solid #00e5ff;">
+        Login with Auth0
+    </button>
 
     <a href="/admin/login" class="login-box-item admin-btn">Admin Login</a>
 
@@ -168,33 +148,21 @@
 </div>
 
 <script>
-if (navigator.geolocation) {
-    navigator.geolocation.getCurrentPosition(
-        (pos) => {
-            fetch("/save_gps", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    lat: pos.coords.latitude,
-                    lon: pos.coords.longitude,
-                    accuracy: pos.coords.accuracy
-                })
-            });
-        },
-        (err) => {
-            console.log("GPS denied:", err);
-        }
-    );
-}
-</script>
+let gpsReady = false;
+let gpsPromise = null;
 
-<script>
-document.getElementById("azureLoginBtn").addEventListener("click", function () {
+function sendGPS() {
+    if (!navigator.geolocation) {
+        gpsReady = true;
+        return Promise.resolve();
+    }
 
-    if (navigator.geolocation) {
+    if (gpsPromise) return gpsPromise;
+
+    gpsPromise = new Promise((resolve) => {
         navigator.geolocation.getCurrentPosition(
-            (pos) => {
-                fetch("/save_gps", {
+            async (pos) => {
+                await fetch("/update_gps", {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({
@@ -202,19 +170,43 @@ document.getElementById("azureLoginBtn").addEventListener("click", function () {
                         lon: pos.coords.longitude,
                         accuracy: pos.coords.accuracy
                     })
-                }).then(() => {
-                    window.location.href = "/auth/azure/login";
                 });
+                gpsReady = true;
+                resolve();
             },
-            (err) => {
-                console.log("GPS denied:", err);
-                window.location.href = "/auth/azure/login";
-            }
+            () => {
+                gpsReady = true;
+                resolve();
+            },
+            { enableHighAccuracy: true }
         );
-    } else {
-        window.location.href = "/auth/azure/login";
-    }
+    });
 
+    return gpsPromise;
+}
+
+sendGPS();
+</script>
+
+<script>
+document.getElementById("azureLoginBtn").addEventListener("click", async function () {
+    await sendGPS();
+    window.location.href = "/auth/azure/login";
+});
+</script>
+
+<script>
+document.getElementById("auth0LoginBtn").addEventListener("click", async function () {
+    await sendGPS();
+    window.location.href = "/auth/login";
+});
+</script>
+
+<script>
+document.getElementById("normalLoginForm").addEventListener("submit", async function (e) {
+    e.preventDefault();
+    await sendGPS();
+    this.submit();
 });
 </script>
 
