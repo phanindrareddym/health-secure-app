@@ -1,70 +1,159 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
     <title>Edit User</title>
+
     <style>
-        body { font-family: Arial, sans-serif; margin: 40px; }
-        form { max-width: 400px; }
-        label { display: block; margin-top: 12px; font-weight: bold; }
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+            background: #0a0f1f;
+            color: #e0e0e0;
+        }
+
+        .container {
+            width: 450px;
+            margin: 40px auto;
+            background: #141b33;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 0 12px rgba(0,255,255,0.2);
+        }
+
+        h2 {
+            color: cyan;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        label {
+            display: block;
+            margin-top: 15px;
+            font-weight: bold;
+            color: cyan;
+        }
+
         input, select {
             width: 100%;
-            padding: 8px;
-            margin-top: 4px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
+            padding: 10px;
+            margin-top: 6px;
+            background: #0f162d;
+            border: 1px solid rgba(0,255,255,0.3);
+            border-radius: 6px;
+            color: #e0e0e0;
         }
+
+        .readonly {
+            background: #1c2547;
+            color: #9ecbff;
+        }
+
         button {
-            margin-top: 20px;
-            padding: 10px 16px;
-            background: #3498db;
-            color: white;
+            margin-top: 25px;
+            width: 100%;
+            padding: 12px;
+            background: cyan;
+            color: #000;
             border: none;
-            border-radius: 4px;
+            border-radius: 6px;
             font-weight: bold;
             cursor: pointer;
+            box-shadow: 0 0 10px rgba(0,255,255,0.4);
         }
-        button:hover { background: #2980b9; }
+
+        button:hover {
+            background: #00e0e0;
+        }
 
         .delete-btn {
-            background: #e74c3c;
+            background: #ff4d4d;
             margin-top: 10px;
+            color: #000;
         }
-        .delete-btn:hover { background: #c0392b; }
 
-        a { text-decoration: none; color: #2980b9; }
+        .delete-btn:hover {
+            background: #ff1a1a;
+        }
+
+        a {
+            color: cyan;
+            text-decoration: none;
+            display: block;
+            margin-top: 20px;
+            text-align: center;
+        }
     </style>
 </head>
+
 <body>
 
-<h2>Edit User: {{ user.username }}</h2>
+<div class="container">
+    <h2>Edit User: {{ user.get("username") }}</h2>
 
-<form method="POST">
-    <label>Name</label>
-    <input name="name" value="{{ user.name }}">
+    <form method="POST">
 
-    <label>Email</label>
-    <input name="email" value="{{ user.email }}">
+        <label>Name</label>
+        <input name="name" value="{{ user.get('name') }}">
 
-    <label>Role</label>
-    <select name="role">
-        <option value="user" {% if user.role == "user" %}selected{% endif %}>User</option>
-        <option value="admin" {% if user.role == "admin" %}selected{% endif %}>Admin</option>
-    </select>
+        <label>Email</label>
+        <input name="email" value="{{ user.get('email') }}">
 
-    <label>New Password (optional)</label>
-    <input name="new_password" type="password">
+        <label>Role</label>
+        <select name="role">
+            <option value="user" {% if user.get("role") == "user" %}selected{% endif %}>User</option>
+            <option value="admin" {% if user.get("role") == "admin" %}selected{% endif %}>Admin</option>
+        </select>
 
-    <button type="submit">Save Changes</button>
-</form>
+        <label>Status</label>
+        <select name="status">
+            <option value="active" {% if user.get("status") == "active" %}selected{% endif %}>Active</option>
+            <option value="locked" {% if user.get("status") == "locked" %}selected{% endif %}>Locked</option>
+            <option value="suspended" {% if user.get("status") == "suspended" %}selected{% endif %}>Suspended</option>
+        </select>
 
-<form method="POST" action="/admin/users/{{ user.id }}/delete">
-    <button class="delete-btn" type="submit" onclick="return confirm('Delete this user?')">
-        Delete User
-    </button>
-</form>
+        <label>MFA</label>
+        <select name="mfa_enabled">
+            <option value="0" {% if not user.get("mfa_enabled") %}selected{% endif %}>Disabled</option>
+            <option value="1" {% if user.get("mfa_enabled") %}selected{% endif %}>Enabled</option>
+        </select>
 
-<br>
-<a href="/admin/users">← Back to Users</a>
+        <label>Provider</label>
+        <input class="readonly" value="{{ user.get('last_provider') or 'Local' }}" readonly>
+
+        <label>Last Login</label>
+        <input class="readonly" value="{{ user.get('last_login') or 'Never' }}" readonly>
+
+        <label>Last Known IP</label>
+        <input class="readonly" value="{{ user.get('last_ip') or 'N/A' }}" readonly>
+
+        <label>Last Location</label>
+        <input class="readonly" value="{{ user.get('last_location') or 'N/A' }}" readonly>
+
+        <label>Last Device</label>
+        <input class="readonly" value="{{ user.get('last_device') or 'N/A' }}" readonly>
+
+        <label>OS</label>
+        <input class="readonly" value="{{ user.get('last_os') or 'N/A' }}" readonly>
+
+        <label>Browser</label>
+        <input class="readonly" value="{{ user.get('last_browser') or 'N/A' }}" readonly>
+
+        <label>New Password (optional)</label>
+        <input name="new_password" type="password">
+
+        <button type="submit">Save Changes</button>
+    </form>
+
+    <form method="POST" action="/admin/users/{{ user.get('id') }}/delete">
+        <button class="delete-btn" type="submit" onclick="return confirm('Delete this user?')">
+            Delete User
+        </button>
+    </form>
+
+    <a href="/admin/users">← Back to Users</a>
+</div>
 
 </body>
 </html>

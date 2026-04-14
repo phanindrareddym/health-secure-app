@@ -67,42 +67,30 @@
     </div>
 
     {% if last_login_event %}
+    <div class="section-title">Last Login</div>
+
     <div class="profile-item">
-        <span class="label">Last Login:</span> {{ last_login_event }}
+        <span class="label">Time:</span> {{ last_login_event.time_str }}
+    </div>
+
+    <div class="profile-item">
+        <span class="label">IP:</span> {{ last_login_event.ip }}
+    </div>
+
+    <div class="profile-item">
+        <span class="label">Location:</span> {{ last_login_event.location }}
+    </div>
+
+    <div class="profile-item">
+        <span class="label">Provider:</span> {{ last_login_event.provider }}
+    </div>
+
+    <div class="profile-item">
+        <span class="label">Device:</span>
+        {{ last_login_event.device.browser }},
+        {{ last_login_event.device.os }},
+        {{ last_login_event.device.device_type }}
     </div>
     {% endif %}
-
-    <!-- Session -->
-    <div class="section-title">Session Details</div>
-
-    {% if login_time %}
-    <div class="profile-item">
-        <span class="label">Session Start:</span> {{ login_time }}
-    </div>
-    {% endif %}
-
-    {% if last_activity %}
-    <div class="profile-item">
-        <span class="label">Last Activity:</span> {{ last_activity }}
-    </div>
-    {% endif %}
-
-    <!-- Device -->
-    <div class="section-title">Device Information</div>
-
-    <div class="profile-item">
-        <span class="label">Browser:</span> {{ device.browser }}
-    </div>
-
-    <div class="profile-item">
-        <span class="label">Operating System:</span> {{ device.os }}
-    </div>
-
-    <div class="profile-item">
-        <span class="label">Device Type:</span> {{ device_type }}
-    </div>
-
-</div>
-
 </body>
 </html>

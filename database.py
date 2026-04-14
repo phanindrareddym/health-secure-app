@@ -12,7 +12,6 @@ def init_db():
     conn = get_db()
     cur = conn.cursor()
 
-    # Users table
     cur.execute("""
     CREATE TABLE IF NOT EXISTS users (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -24,7 +23,27 @@ def init_db():
     )
     """)
 
-    # MFA table
+    new_columns = [
+        ("status", "TEXT", "'active'"),
+        ("mfa_enabled", "INTEGER", "0"),
+        ("last_login", "TEXT", "NULL"),
+        ("last_ip", "TEXT", "NULL"),
+        ("last_location", "TEXT", "NULL"),
+        ("last_provider", "TEXT", "NULL"),
+        ("last_device", "TEXT", "NULL"),
+        ("last_os", "TEXT", "NULL"),
+        ("last_browser", "TEXT", "NULL"),
+    ]
+
+    # Check existing columns
+    cur.execute("PRAGMA table_info(users)")
+    existing_cols = [row["name"] for row in cur.fetchall()]
+
+    # Add missing columns
+    for col, col_type, default in new_columns:
+        if col not in existing_cols:
+            cur.execute(f"ALTER TABLE users ADD COLUMN {col} {col_type} DEFAULT {default}")
+
     cur.execute("""
     CREATE TABLE IF NOT EXISTS mfa (
         user_id INTEGER UNIQUE,
@@ -34,7 +53,6 @@ def init_db():
     )
     """)
 
-    # Security events table
     cur.execute("""
     CREATE TABLE IF NOT EXISTS security_events (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -46,9 +64,22 @@ def init_db():
     )
     """)
 
+    cur.execute("""
+    CREATE TABLE IF NOT EXISTS login_history (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER,
+        time TEXT,
+        ip TEXT,
+        location TEXT,
+        provider TEXT,
+        device TEXT,
+        os TEXT,
+        browser TEXT
+    )
+    """)
+
     conn.commit()
     conn.close()
-
 
 def create_user(username, email, name, role="user", password_hash=None):
     conn = get_db()
@@ -80,9 +111,16 @@ def get_all_users():
     cur = conn.cursor()
     cur.execute("SELECT * FROM users ORDER BY id")
     users = cur.fetchall()
-    conn.close()
-    return users
 
+    # Attach login history to each user
+    result = []
+    for u in users:
+        u = dict(u)
+        u["history"] = get_login_history(u["id"])
+        result.append(u)
+
+    conn.close()
+    return result
 
 def get_user_by_id(user_id):
     conn = get_db()
@@ -135,14 +173,14 @@ def verify_mfa_code(user_id, code):
     totp = pyotp.TOTP(record["secret"])
     return totp.verify(code)
 
-def update_user(user_id, name, email, role):
+def update_user(user_id, name, email, role, status, mfa_enabled):
     conn = get_db()
     cur = conn.cursor()
     cur.execute("""
         UPDATE users
-        SET name = ?, email = ?, role = ?
+        SET name = ?, email = ?, role = ?, status = ?, mfa_enabled = ?
         WHERE id = ?
-    """, (name, email, role, user_id))
+    """, (name, email, role, status, mfa_enabled, user_id))
     conn.commit()
     conn.close()
 
@@ -164,3 +202,89 @@ def delete_user(user_id):
     cur.execute("DELETE FROM users WHERE id = ?", (user_id,))
     conn.commit()
     conn.close()
+
+def update_user_last_login(user_id, last_login, last_ip, last_location,
+                           last_provider, last_device, last_os, last_browser):
+    conn = get_db()
+    cur = conn.cursor()
+    cur.execute("""
+        UPDATE users SET
+            last_login = ?,
+            last_ip = ?,
+            last_location = ?,
+            last_provider = ?,
+            last_device = ?,
+            last_os = ?,
+            last_browser = ?
+        WHERE id = ?
+    """, (last_login, last_ip, last_location, last_provider,
+          last_device, last_os, last_browser, user_id))
+    conn.commit()
+    conn.close()
+
+def insert_login_history(user_id, time, ip, location, provider, device, os, browser):
+    conn = get_db()
+    cur = conn.cursor()
+    cur.execute("""
+        INSERT INTO login_history (user_id, time, ip, location, provider, device, os, browser)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+    """, (user_id, time, ip, location, provider, device, os, browser))
+    conn.commit()
+    conn.close()
+
+from datetime import datetime
+from zoneinfo import ZoneInfo
+
+def record_user_login(user, ip, provider, location, device_info):
+    conn = get_db()
+    cur = conn.cursor()
+
+    cur.execute("""
+        INSERT INTO login_history (user_id, time, ip, location, provider, device, os, browser)
+        VALUES (?, datetime('now'), ?, ?, ?, ?, ?, ?)
+    """, (
+        user["id"],
+        ip,
+        location,
+        provider,
+        device_info.get("device"),
+        device_info.get("os"),
+        device_info.get("browser")
+    ))
+
+    cur.execute("""
+        UPDATE users SET
+            last_login = datetime('now'),
+            last_ip = ?,
+            last_location = ?,
+            last_provider = ?,
+            last_device = ?,
+            last_os = ?,
+            last_browser = ?
+        WHERE id = ?
+    """, (
+        ip,
+        location,
+        provider,
+        device_info.get("device"),
+        device_info.get("os"),
+        device_info.get("browser"),
+        user["id"]
+    ))
+
+    conn.commit()
+    conn.close()
+
+def get_login_history(user_id):
+    conn = get_db()
+    cur = conn.cursor()
+    cur.execute("""
+        SELECT * FROM login_history
+        WHERE user_id = ?
+        ORDER BY time DESC
+        LIMIT 20
+    """, (user_id,))
+    rows = cur.fetchall()
+    conn.close()
+    return rows
+

@@ -134,6 +134,7 @@
         .provider-azure { color: #00a4ef; border-color: #00a4ef; }
         .provider-auth0 { color: #eb5424; border-color: #eb5424; }
         .provider-local { color: #cccccc; border-color: #cccccc; }
+        .provider-system { color: #ff4d4d; border-color: #ff4d4d; }
 
         .content {
             flex: 1;
@@ -312,13 +313,13 @@
                 <h2>Security Events</h2>
 
                 {% if security_events %}
-                    {% for e in security_events %}
+                    {% for e in security_events|reverse %}
                         {% set ip_data = ip_behavior.get(e.ip) if ip_behavior else None %}
 
                         <div class="event">
                             <div class="event-header">
-                                <span class="{{ e.severity }}">{{ e.severity.upper() }}</span> —
-                                {{ e.details }}
+                                <span class="{{ e.severity|lower }}">{{ e.severity.upper() }}</span> —
+                                {{ e.type|capitalize }} — {{ e.provider }} — {{ e.username }} from {{ e.location or "Unknown" }}
                             </div>
 
                             <div class="event-details">
@@ -369,7 +370,18 @@
                                     <strong>Requests:</strong> {{ ip_data.request_count }} |
                                     <strong>Status:</strong> {{ ip_data.risk }}
                                 </div>
+                                {% else %}
+                                <div class="event-details-row">
+                                    <strong>Risk Score:</strong> {{ e.risk_score or 0 }} |
+                                    <strong>Suspicious Count:</strong> {{ e.suspicious_count or 0 }} |
+                                    <strong>Requests:</strong> {{ e.requests or 0 }} |
+                                    <strong>Status:</strong> {{ e.status or "normal" }}
+                                </div>
                                 {% endif %}
+
+                                <div class="event-details-row">
+                                    <strong>Details:</strong> {{ e.details or "" }}
+                                </div>
 
                             </div>
                         </div>
@@ -392,6 +404,7 @@
                             <option value="azure">Azure</option>
                             <option value="auth0">Auth0</option>
                             <option value="local">Local</option>
+                            <option value="system">System</option>
                         </select>
                     </label>
 
@@ -449,7 +462,6 @@
 
     <!-- MAP + SIDEBAR + FILTERS SCRIPT -->
     <script>
-        // Collapsible event rows
         document.querySelectorAll('.event').forEach(function(row) {
             row.addEventListener('click', function(ev) {
                 if (ev.target.tagName === 'A' || ev.target.closest('form')) return;
@@ -484,6 +496,7 @@
         var sidebarList = document.getElementById('userList');
 
         function getSeverityColor(sev) {
+            sev = (sev || '').toLowerCase();
             if (sev === 'red') return 'red';
             if (sev === 'yellow') return 'orange';
             if (sev === 'green') return 'lime';
@@ -491,6 +504,7 @@
         }
 
         function getSeverityClass(sev) {
+            sev = (sev || '').toLowerCase();
             if (sev === 'red') return 'severity-red';
             if (sev === 'yellow') return 'severity-yellow';
             if (sev === 'green') return 'severity-green';
@@ -499,9 +513,11 @@
 
         function getProviderKey(evt) {
             var p = (evt.provider || '').toLowerCase();
+            if (!p) return 'system';
             if (p.includes('azure')) return 'azure';
             if (p.includes('auth0')) return 'auth0';
             if (p.includes('local')) return 'local';
+            if (p.includes('system')) return 'system';
             return 'local';
         }
 
@@ -510,41 +526,44 @@
             if (p.includes('azure')) return 'Azure';
             if (p.includes('auth0')) return 'Auth0';
             if (p.includes('local')) return 'Local';
-            return 'Local';
+            if (p.includes('system')) return 'System';
+            return evt.provider || 'Local';
         }
 
         function buildPopup(evt) {
             return `
-                <b>${(evt.type || 'login').toUpperCase()}</b><br>
+                <b>${(evt.type || 'event').toUpperCase()}</b><br>
                 <b>User:</b> ${evt.username || evt.user || 'Unknown'}<br>
-                <b>Provider:</b> ${evt.provider || 'Unknown'}<br><br>
-
+                <b>Provider:</b> ${evt.provider || 'Unknown'}<br>
+                <b>From:</b> ${evt.location || 'Unknown'}<br><br>
                 <b>Time:</b> ${evt.time || 'Unknown'}<br><br>
-
                 <b>IP:</b> ${evt.ip || 'Unknown'}<br>
                 <b>Location:</b> ${evt.location || 'Unknown'}<br>
                 <b>Lat:</b> ${evt.lat || 'N/A'} |
                 <b>Lon:</b> ${evt.lon || 'N/A'}<br><br>
-
                 <b>Device:</b> ${evt.device || 'Unknown'}<br>
                 <b>OS:</b> ${evt.os || 'Unknown'}<br>
                 <b>Browser:</b> ${evt.browser || 'Unknown'}<br>
                 <b>MFA:</b> ${evt.mfa_enabled ? 'Enabled' : 'Disabled'}<br><br>
-
                 <b>ISP:</b> ${evt.isp || 'Unknown'}<br>
                 <b>ASN:</b> ${evt.asn || 'Unknown'}<br><br>
-
                 <b>Risk Score:</b> ${evt.risk_score || 0}<br>
                 <b>Suspicious Count:</b> ${evt.suspicious_count || 0}<br>
                 <b>Requests:</b> ${evt.requests || 0}<br>
                 <b>Status:</b> ${evt.status || 'normal'}<br><br>
-
                 <b>Details:</b> ${evt.details || ''}
             `;
         }
 
         function buildSidebar() {
             sidebarList.innerHTML = '';
+
+            filteredMarkers.sort(function(a, b) {
+                var ta = new Date(a.event.time || 0).getTime();
+                var tb = new Date(b.event.time || 0).getTime();
+                return tb - ta;
+            });
+
             filteredMarkers.forEach(function(item, idx) {
                 var evt = item.event;
                 var row = document.createElement('div');
@@ -565,7 +584,7 @@
 
                 var sub = document.createElement('div');
                 sub.className = 'user-sub-line';
-                sub.textContent = (evt.location || 'Unknown location') + ' • ' + (evt.time || '');
+                sub.textContent = `${evt.location || 'Unknown'} • ${evt.time || ''}`;
 
                 row.appendChild(main);
                 row.appendChild(sub);
@@ -575,7 +594,9 @@
                         r.classList.remove('active');
                     });
                     row.classList.add('active');
-                    map.setView([evt.lat || 0, evt.lon || 0], 5);
+                    if (evt.lat && evt.lon) {
+                        map.setView([evt.lat, evt.lon], 5);
+                    }
                     item.marker.openPopup();
                 });
 
@@ -607,7 +628,7 @@
                 filteredMarkers.push(item);
             });
 
-            if (!map.hasLayer(markerCluster)) {
+            if (!map.hasLayer(markerCluster) && !heatmapMode) {
                 markerCluster.addTo(map);
             }
 
@@ -625,7 +646,7 @@
                 .filter(function(item) { return item.event.lat && item.event.lon; })
                 .map(function(item) {
                     var e = item.event;
-                    var weight = e.risk_score ? Math.min(e.risk_score / 10, 1) : 0.2;
+                    var weight = e.risk_score ? Math.min(e.risk_score / 100, 1) : 0.2;
                     return [e.lat, e.lon, weight];
                 });
 
@@ -635,11 +656,15 @@
                     blur: 15,
                     maxZoom: 10
                 });
+                if (heatmapMode) {
+                    heatLayer.addTo(map);
+                }
             }
         }
 
         function initMarkers() {
             markers = [];
+
             rawEvents.forEach(function(evt, index) {
                 if (!evt.lat || !evt.lon) return;
 
@@ -657,10 +682,19 @@
                 markers.push({ event: evt, marker: marker, index: index });
             });
 
+            markers.sort(function(a, b) {
+                var ta = new Date(a.event.time || 0).getTime();
+                var tb = new Date(b.event.time || 0).getTime();
+                return ta - tb;
+            });
+
+            markers.forEach(function(item, idx) {
+                item.index = idx;
+            });
+
             applyFilters();
         }
 
-        // Timeline + replay
         var timelineRange = document.getElementById('timelineRange');
         var timelineLabel = document.getElementById('timelineLabel');
         var playBtn = document.getElementById('playBtn');
@@ -687,7 +721,7 @@
                 }
             });
 
-            if (!map.hasLayer(markerCluster)) {
+            if (!map.hasLayer(markerCluster) && !heatmapMode) {
                 markerCluster.addTo(map);
             }
 
@@ -737,12 +771,16 @@
             if (heatmapMode) {
                 heatmapBtn.classList.add('active');
                 heatmapBtn.textContent = 'Markers Mode';
-                map.removeLayer(markerCluster);
+                if (map.hasLayer(markerCluster)) {
+                    map.removeLayer(markerCluster);
+                }
                 if (heatLayer) heatLayer.addTo(map);
             } else {
                 heatmapBtn.classList.remove('active');
                 heatmapBtn.textContent = 'Heatmap Mode';
-                if (heatLayer) map.removeLayer(heatLayer);
+                if (heatLayer && map.hasLayer(heatLayer)) {
+                    map.removeLayer(heatLayer);
+                }
                 markerCluster.addTo(map);
             }
         });

@@ -1,65 +1,137 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
     <title>Create User</title>
+
     <style>
-        body { font-family: Arial, sans-serif; margin: 40px; }
-        form { max-width: 400px; }
-        label { display: block; margin-top: 12px; font-weight: bold; }
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+            background: #0a0f1f;
+            color: #e0e0e0;
+        }
+
+        .container {
+            width: 450px;
+            margin: 40px auto;
+            background: #141b33;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 0 12px rgba(0,255,255,0.2);
+        }
+
+        h2 {
+            color: cyan;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        label {
+            display: block;
+            margin-top: 15px;
+            font-weight: bold;
+            color: cyan;
+        }
+
         input, select {
             width: 100%;
-            padding: 8px;
-            margin-top: 4px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
+            padding: 10px;
+            margin-top: 6px;
+            background: #0f162d;
+            border: 1px solid rgba(0,255,255,0.3);
+            border-radius: 6px;
+            color: #e0e0e0;
         }
+
         button {
-            margin-top: 20px;
-            padding: 10px 16px;
-            background: #3498db;
-            color: white;
+            margin-top: 25px;
+            width: 100%;
+            padding: 12px;
+            background: cyan;
+            color: #000;
             border: none;
-            border-radius: 4px;
+            border-radius: 6px;
             font-weight: bold;
             cursor: pointer;
+            box-shadow: 0 0 10px rgba(0,255,255,0.4);
         }
-        button:hover { background: #2980b9; }
-        .error { color: red; margin-top: 10px; }
-        a { text-decoration: none; color: #2980b9; }
+
+        button:hover {
+            background: #00e0e0;
+        }
+
+        a {
+            color: cyan;
+            text-decoration: none;
+            display: block;
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        .error {
+            color: #ff4d4d;
+            margin-top: 10px;
+            text-align: center;
+        }
     </style>
 </head>
+
 <body>
 
-<h2>Create User</h2>
+<div class="container">
+    <h2>Create User</h2>
 
-{% if error %}
-<p class="error">{{ error }}</p>
-{% endif %}
+    {% if error %}
+        <p class="error">{{ error }}</p>
+    {% endif %}
 
-<form method="POST">
-    <label>Username</label>
-    <input name="username" required>
+    <form method="POST">
 
-    <label>Email</label>
-    <input name="email">
+        <label>Username</label>
+        <input name="username" required>
 
-    <label>Name</label>
-    <input name="name">
+        <label>Email</label>
+        <input name="email">
 
-    <label>Role</label>
-    <select name="role">
-        <option value="user">User</option>
-        <option value="admin">Admin</option>
-    </select>
+        <label>Name</label>
+        <input name="name">
 
-    <label>Password</label>
-    <input name="password" type="password" required>
+        <label>Role</label>
+        <select name="role">
+            <option value="user">User</option>
+            <option value="admin">Admin</option>
+        </select>
 
-    <button type="submit">Create User</button>
-</form>
+        <label>Password</label>
+        <input name="password" type="password" required>
 
-<br>
-<a href="/admin/users">← Back to Users</a>
+        <label>Status</label>
+        <select name="status">
+            <option value="active">Active</option>
+            <option value="locked">Locked</option>
+            <option value="suspended">Suspended</option>
+        </select>
+
+        <label>MFA</label>
+        <select name="mfa_enabled">
+            <option value="0">Disabled</option>
+            <option value="1">Enabled</option>
+        </select>
+
+        <label>Provider</label>
+        <select name="provider">
+            <option value="Normal">Normal</option>
+            <option value="Azure">Azure</option>
+            <option value="Auth0">Auth0</option>
+        </select>
+
+        <button type="submit">Create User</button>
+    </form>
+
+    <a href="/admin/users">← Back to Users</a>
+</div>
 
 </body>
 </html>

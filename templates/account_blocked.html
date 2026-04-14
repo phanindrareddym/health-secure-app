@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Account Access Restricted</title>
+    <style>
+        body {
+            background: #0a0f1f;
+            color: #e0e0e0;
+            font-family: Arial, sans-serif;
+            text-align: center;
+            padding-top: 100px;
+        }
+        .box {
+            background: #141b33;
+            padding: 30px;
+            border-radius: 10px;
+            width: 400px;
+            margin: auto;
+            box-shadow: 0 0 15px rgba(0,255,255,0.2);
+        }
+        h2 {
+            color: cyan;
+        }
+        p {
+            color: #9ecbff;
+        }
+        a {
+            color: cyan;
+            text-decoration: none;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+<div class="box">
+    {% if reason == "locked" %}
+        <h2>Your Account is Locked</h2>
+        <p>Please contact your administrator for assistance.</p>
+    {% elif reason == "suspended" %}
+        <h2>Your Account is Suspended</h2>
+        <p>Please contact your administrator to restore access.</p>
+    {% endif %}
+
+    <br>
+    <a href="/login">Return to Login</a>
+</div>
+
+</body>
+</html>

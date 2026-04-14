@@ -74,10 +74,6 @@
             cursor: pointer;
         }
 
-        .risk-low { color: #00ff99; font-weight: bold; }
-        .risk-medium { color: #ffcc00; font-weight: bold; }
-        .risk-high { color: #ff4d4d; font-weight: bold; }
-
         .expandable {
             display: none;
             background: #0f162d;
@@ -162,67 +158,118 @@
         <table>
             <tr>
                 <th>ID</th>
-                <th>User</th>
-                <th>Email</th>
                 <th>Name</th>
+                <th>Email</th>
                 <th>Role</th>
+                <th>Status</th>
                 <th>Last Login</th>
-                <th>IP</th>
-                <th>Risk</th>
+                <th>Last Known IP</th>
+                <th>Provider</th>
+                <th>MFA</th>
+                <th>Last Device</th>
                 <th>Actions</th>
             </tr>
 
             {% for u in users %}
             <tr class="user-row" onclick="toggleHistory('hist_{{ loop.index }}')">
-                <td>{{ u.id }}</td>
-                <td>{{ u.username }}</td>
-                <td>{{ u.email or 'N/A' }}</td>
-                <td>{{ u.name or 'N/A' }}</td>
-                <td>{{ u.role }}</td>
-                <td>{{ u.last_login|fmt_time if u.last_login else "Never" }}</td>
-                <td>{{ u.last_ip or "N/A" }}</td>
+
+                <td>{{ u.get("id") }}</td>
+
+                <td>{{ u.get("name") or 'N/A' }}</td>
+
+                <td>{{ u.get("email") or 'N/A' }}</td>
+
+                <td>{{ u.get("role") }}</td>
 
                 <td>
-                    {% if u.risk < 5 %}
-                        <span class="risk-low">Low</span>
-                    {% elif u.risk < 15 %}
-                        <span class="risk-medium">Medium</span>
+                    {% if u.get("status") == 'active' %}
+                        <span style="color:#00ff99; font-weight:bold;">Active</span>
+                    {% elif u.get("status") == 'locked' %}
+                        <span style="color:#ff4d4d; font-weight:bold;">Locked</span>
                     {% else %}
-                        <span class="risk-high">High</span>
+                        <span style="color:#ffcc00; font-weight:bold;">Suspended</span>
+                    {% endif %}
+                </td>
+
+                <td>{{ u.get("last_login")|fmt_time if u.get("last_login") else "Never" }}</td>
+
+                <td>
+                    {% if u.get("last_ip") %}
+                        {{ u.get("last_ip") }}<br>
+                        <span style="font-size:12px; color:#9ecbff;">
+                            {{ u.get("last_location") or '' }}
+                        </span>
+                    {% else %}
+                        N/A
                     {% endif %}
                 </td>
 
                 <td>
-                    <a class="edit-link" href="/admin/users/{{ u.id }}/edit">Edit</a>
+                    {% if u.get("last_provider") == 'Azure' %}
+                        <span style="color:#4da6ff; font-weight:bold;">Azure</span>
+                    {% elif u.get("last_provider") == 'Auth0' %}
+                        <span style="color:#ff9966; font-weight:bold;">Auth0</span>
+                    {% elif u.get("last_provider") == 'Local' %}
+                        <span style="color:#cccccc; font-weight:bold;">Local</span>
+                    {% else %}
+                        <span style="color:#666;">N/A</span>
+                    {% endif %}
+                </td>
 
-                    <form method="POST" action="/admin/users/{{ u.id }}/delete" style="display:inline;">
+                <td>
+                    {% if u.get("mfa_enabled") %}
+                        <span style="color:#00ff99; font-weight:bold;">Enabled</span>
+                    {% else %}
+                        <span style="color:#ff4d4d; font-weight:bold;">Disabled</span>
+                    {% endif %}
+                </td>
+
+                <td>
+                    {% if u.get("last_device") %}
+                        {{ u.get("last_device") }}<br>
+                        <span style="font-size:12px; color:#9ecbff;">
+                            {{ u.get("last_os") }} — {{ u.get("last_browser") }}
+                        </span>
+                    {% else %}
+                        N/A
+                    {% endif %}
+                </td>
+
+                <td>
+                    <a class="edit-link" href="/admin/users/{{ u.get('id') }}/edit">Edit</a>
+
+                    <form method="POST" action="/admin/users/{{ u.get('id') }}/delete" style="display:inline;">
                         <button type="submit" onclick="return confirm('Delete this user?')">Delete</button>
                     </form>
                 </td>
             </tr>
 
             <tr>
-                <td colspan="9">
+                <td colspan="11">
                     <div class="expandable" id="hist_{{ loop.index }}">
                         <h4 style="color: cyan;">Login History</h4>
 
-                        {% if u.history %}
+                        {% if u.get("history") %}
                         <table>
                             <tr>
                                 <th>Time</th>
                                 <th>IP</th>
-                                <th>Browser</th>
-                                <th>OS</th>
+                                <th>Location</th>
+                                <th>Provider</th>
                                 <th>Device</th>
+                                <th>OS</th>
+                                <th>Browser</th>
                             </tr>
 
-                            {% for h in u.history %}
+                            {% for h in u.get("history") %}
                             <tr>
-                                <td>{{ h.time|fmt_time }}</td>
-                                <td>{{ h.ip }}</td>
-                                <td>{{ h.browser }}</td>
-                                <td>{{ h.os }}</td>
-                                <td>{{ h.device }}</td>
+                                <td>{{ h.get("time")|fmt_time }}</td>
+                                <td>{{ h.get("ip") }}</td>
+                                <td>{{ h.get("location") }}</td>
+                                <td>{{ h.get("provider") }}</td>
+                                <td>{{ h.get("device", {}).get("device_type", "") }}</td>
+                                <td>{{ h.get("device", {}).get("os", "") }}</td>
+                                <td>{{ h.get("device", {}).get("browser", "") }}</td>
                             </tr>
                             {% endfor %}
                         </table>
@@ -232,6 +279,7 @@
                     </div>
                 </td>
             </tr>
+
             {% endfor %}
         </table>
 
