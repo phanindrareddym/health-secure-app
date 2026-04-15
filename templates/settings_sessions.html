@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Session Management</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 40px;
+            background: #f0f2f5;
+        }
+        .card {
+            max-width: 900px;
+            margin: auto;
+            padding: 25px;
+            border-radius: 12px;
+            background: #ffffff;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        }
+        h2 {
+            margin-bottom: 20px;
+            color: #2c3e50;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: #fafafa;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        th {
+            background: #e8e8e8;
+            padding: 12px;
+            text-align: left;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+        td {
+            padding: 12px;
+            border-bottom: 1px solid #ddd;
+            font-size: 14px;
+        }
+        tr:hover {
+            background: #f5f5f5;
+        }
+        .current {
+            color: green;
+            font-weight: bold;
+        }
+        .btn-logout {
+            padding: 6px 10px;
+            background: #e74c3c;
+            color: white;
+            border-radius: 6px;
+            text-decoration: none;
+            font-size: 13px;
+        }
+        .btn-logout:hover {
+            background: #c0392b;
+        }
+        .btn-all {
+            display: inline-block;
+            margin-top: 20px;
+            padding: 10px 14px;
+            background: #e74c3c;
+            color: white;
+            border-radius: 6px;
+            text-decoration: none;
+            font-weight: bold;
+        }
+        .btn-all:hover {
+            background: #c0392b;
+        }
+        .back-button {
+            display: inline-block;
+            margin-top: 25px;
+            padding: 8px 14px;
+            background: #f0f0f0;
+            border-radius: 6px;
+            color: #333;
+            text-decoration: none;
+            font-weight: 500;
+        }
+        .back-button:hover {
+            background: #e0e0e0;
+        }
+    </style>
+</head>
+<body>
+
+<div class="card">
+    <h2>Active Sessions</h2>
+
+    <table>
+        <tr>
+            <th>Device</th>
+            <th>IP</th>
+            <th>Location</th>
+            <th>Login Time</th>
+            <th>Last Activity</th>
+            <th>Action</th>
+        </tr>
+
+        {% for s in sessions %}
+        <tr>
+            <td>{{ s["device_type"] }}</td>
+            <td>{{ s["ip"] }}</td>
+            <td>{{ s["location"] }}</td>
+            <td>{{ s["login_time"]|fmt_time }}</td>
+            <td>{{ s["last_activity"]|fmt_time }}</td>
+
+            <td>
+                {% if s["session_id"] == current_session %}
+                    <span class="current">Current Session</span>
+                {% else %}
+                    <a class="btn-logout" href="/settings/sessions/logout/{{ s['session_id'] }}">Logout</a>
+                {% endif %}
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
+
+    <a class="btn-all" href="/settings/sessions/logout_all">Logout All Devices</a>
+
+    <br>
+    <a href="/settings" class="back-button">← Back to Settings</a>
+</div>
+
+</body>
+</html>

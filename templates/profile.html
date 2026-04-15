@@ -17,7 +17,7 @@
             box-shadow: 0 4px 12px rgba(0,0,0,0.08);
         }
         .profile-card h2 {
-            margin-bottom: 20px;
+            margin-bottom: 10px;
             color: #2c3e50;
         }
         .section-title {
@@ -35,6 +35,20 @@
         .label {
             font-weight: bold;
             color: #34495e;
+        }
+        .back-button {
+            display: inline-block;
+            margin-top: 25px;
+            padding: 8px 14px;
+            background: #f0f0f0;
+            border-radius: 6px;
+            color: #333;
+            text-decoration: none;
+            font-weight: 500;
+            transition: 0.2s;
+        }
+        .back-button:hover {
+            background: #e0e0e0;
         }
     </style>
 </head>
@@ -66,6 +80,11 @@
         <span class="label">MFA Enabled:</span> {{ "Yes" if mfa_enabled else "No" }}
     </div>
 
+    <div class="profile-item">
+        <span class="label">Trusted Device:</span>
+        {{ "Yes" if trusted_device else "No" }}
+    </div>
+
     {% if last_login_event %}
     <div class="section-title">Last Login</div>
 
@@ -92,5 +111,11 @@
         {{ last_login_event.device.device_type }}
     </div>
     {% endif %}
+
+    <!-- Back button always visible -->
+    <a href="/" class="back-button">← Back to Dashboard</a>
+
+</div>
+
 </body>
 </html>

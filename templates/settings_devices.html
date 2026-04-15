@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Trusted Devices</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f0f2f5;
+            padding: 30px;
+        }
+        .container {
+            max-width: 900px;
+            margin: auto;
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+        th, td {
+            padding: 10px;
+            border-bottom: 1px solid #ddd;
+        }
+        th {
+            background: #f7f7f7;
+            text-align: left;
+        }
+        .btn {
+            padding: 6px 12px;
+            border-radius: 6px;
+            border: none;
+            cursor: pointer;
+        }
+        .btn-primary {
+            background: #007bff;
+            color: white;
+        }
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+        }
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+        .rename-input {
+            width: 120px;
+            padding: 4px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+
+    <h2>Trusted Devices</h2>
+
+    <form action="/settings/devices/trust" method="POST">
+        <button class="btn btn-primary">Trust This Device</button>
+    </form>
+
+    {% if devices|length == 0 %}
+        <p>No trusted devices yet.</p>
+    {% else %}
+
+    <table>
+        <thead>
+            <tr>
+                <th>Device Name</th>
+                <th>Auto Name</th>
+                <th>IP</th>
+                <th>Location</th>
+                <th>First Seen</th>
+                <th>Last Used</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            {% for d in devices %}
+            <tr>
+                <td>{{ d.device_name or "Not named" }}</td>
+                <td>{{ d.auto_name }}</td>
+                <td>{{ d.ip }}</td>
+                <td>{{ d.location }}</td>
+
+                <td>{{ d.created_at | int | fmt_time }}</td>
+                <td>{{ d.last_used | int | fmt_time }}</td>
+
+                <td>
+                    <form action="/settings/devices/rename/{{ d.id }}" method="POST" style="display:inline-block;">
+                        <input type="text" name="new_name" class="rename-input" placeholder="New name">
+                        <button class="btn btn-secondary">Rename</button>
+                    </form>
+
+                    <form action="/settings/devices/remove/{{ d.id }}" method="POST" style="display:inline-block;">
+                        <button class="btn btn-danger">Remove</button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <form action="/settings/devices/remove_all" method="POST">
+        <button class="btn btn-danger" style="margin-top: 15px;">Remove All Devices</button>
+    </form>
+
+    {% endif %}
+
+    <a href="/settings" class="back-button">← Back to Settings</a>
+    
+</div>
+
+</body>
+</html>
