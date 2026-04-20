@@ -10,15 +10,12 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
-
-      - name: Install Gitleaks
-        run: |
-          curl -sSL https://github.com/gitleaks/gitleaks/releases/latest/download/gitleaks-linux-amd64 -o gitleaks
-          chmod +x gitleaks
+        uses: actions/checkout@v4
 
       - name: Run Gitleaks
-        run: ./gitleaks detect --source . --report-format json --report-path gitleaks-report.json
+        uses: gitleaks/gitleaks-action@v2
+        with:
+          args: detect --source . --report-format json --report-path gitleaks-report.json
 
       - name: Upload Gitleaks Report
         uses: actions/upload-artifact@v4
