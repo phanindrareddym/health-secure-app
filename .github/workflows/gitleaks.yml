@@ -1,0 +1,27 @@
+name: Secret Scanning (Gitleaks)
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  gitleaks:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Install Gitleaks
+        run: |
+          curl -sSL https://github.com/gitleaks/gitleaks/releases/latest/download/gitleaks-linux-amd64 -o gitleaks
+          chmod +x gitleaks
+
+      - name: Run Gitleaks
+        run: ./gitleaks detect --source . --report-format json --report-path gitleaks-report.json
+
+      - name: Upload Gitleaks Report
+        uses: actions/upload-artifact@v3
+        with:
+          name: gitleaks-report
+          path: gitleaks-report.json
