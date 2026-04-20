@@ -144,7 +144,7 @@ def create_user(username, email, name, role="user", password_hash=None):
     cur = conn.cursor()
 
     if password_hash is None:
-        password_hash = "oauth"  # nosec B105
+        password_hash = "oauth"  # nosec
 
     cur.execute("""
         INSERT INTO users (username, password_hash, email, name, role)
