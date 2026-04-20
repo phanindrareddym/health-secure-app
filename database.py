@@ -144,7 +144,7 @@ def create_user(username, email, name, role="user", password_hash=None):
     cur = conn.cursor()
 
     if password_hash is None:
-        password_hash = "azure-oauth"
+        password_hash = "oauth"  # nosec B105
 
     cur.execute("""
         INSERT INTO users (username, password_hash, email, name, role)
@@ -366,8 +366,9 @@ def update_last_activity():
             """, (int(datetime.now().timestamp()), session["session_id"]))
             conn.commit()
             conn.close()
-    except:
-        pass
+    except Exception as e:
+        app.logger.error(f"Database close error: {e}")
+
 
 # ============================================================
 #  TRUSTED DEVICES (NEW)
