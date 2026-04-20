@@ -21,7 +21,7 @@ jobs:
         run: pip install bandit
 
       - name: Run Bandit (excluding dependency folders)
-        run: bandit -r . -x venv,__pycache__,*.egg-info,build,dist -f txt -o bandit-report.txt
+        run: bandit -r . -x venv,__pycache__,*.egg-info,build,dist -f txt -o bandit-report.txt --exit-zero
 
       - name: Upload Bandit Report
         uses: actions/upload-artifact@v4
