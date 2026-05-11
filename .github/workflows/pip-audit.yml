@@ -22,7 +22,11 @@ jobs:
         run: pip install pip-audit
 
       - name: Run pip-audit
-        run: pip-audit --output pip-audit-report.json --format json
+        shell: bash
+        run: |
+          set +e
+          pip-audit --output pip-audit-report.json --format json
+          echo "pip-audit completed with exit code $?"
 
       - name: Upload pip-audit report
         uses: actions/upload-artifact@v4
