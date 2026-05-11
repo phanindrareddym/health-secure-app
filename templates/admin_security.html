@@ -42,9 +42,15 @@
             letter-spacing: 1px;
         }
 
+        /* TOP NAVIGATION */
+        .nav-links {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
         .nav-links a {
             color: cyan;
-            margin-left: 20px;
             text-decoration: none;
             font-weight: bold;
             font-size: 14px;
@@ -54,6 +60,56 @@
             text-decoration: underline;
         }
 
+        /* EXPORT DROPDOWN */
+        .export-dropdown {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .export-btn {
+            background: transparent;
+            color: cyan;
+            border: none;
+            font-weight: bold;
+            font-size: 14px;
+            cursor: pointer;
+            padding: 0;
+        }
+
+        .export-btn:hover {
+            text-decoration: underline;
+        }
+
+        .export-menu {
+            display: none;
+            position: absolute;
+            right: 0;
+            background: #1e1e1e;
+            border: 1px solid #333;
+            border-radius: 6px;
+            padding: 10px;
+            min-width: 200px;
+            z-index: 999;
+        }
+
+        .export-menu a {
+            display: block;
+            padding: 6px 8px;
+            color: cyan;
+            text-decoration: none;
+            font-size: 14px;
+        }
+
+        .export-menu a:hover {
+            background: #333;
+        }
+
+        .export-dropdown:hover .export-menu {
+            display: block;
+        }
+
+        /* MAIN LAYOUT */
         .main-layout {
             display: flex;
             height: calc(100vh - 72px);
@@ -280,15 +336,27 @@
         }
     </style>
 </head>
-
 <body>
-
     <div class="header">
         <h1>Admin Security Dashboard</h1>
 
         <div class="nav-links">
             <a href="/admin/security">Security</a>
             <a href="/admin/users">Users</a>
+
+            <!-- EXPORT LOGS DROPDOWN (PLACED BETWEEN USERS AND LOGOUT) -->
+            <div class="export-dropdown">
+                <button class="export-btn">Export Logs ▾</button>
+                <div class="export-menu">
+                    <a href="/admin/export/logs.json">All Logs (JSON)</a>
+                    <a href="/admin/export/logs.csv">All Logs (CSV)</a>
+                    <a href="/admin/export/security_events.json">Security Events (JSON)</a>
+                    <a href="/admin/export/security_events.csv">Security Events (CSV)</a>
+                    <a href="/admin/export/login_history.json">Login History (JSON)</a>
+                    <a href="/admin/export/login_history.csv">Login History (CSV)</a>
+                </div>
+            </div>
+
             <a href="/admin/logout">Logout</a>
         </div>
     </div>
@@ -311,7 +379,6 @@
             <!-- SECURITY EVENTS (collapsible list) -->
             <div class="section">
                 <h2>Security Events</h2>
-
                 {% if security_events %}
                     {% for e in security_events|reverse %}
                         {% set ip_data = ip_behavior.get(e.ip) if ip_behavior else None %}

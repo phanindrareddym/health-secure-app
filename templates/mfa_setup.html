@@ -19,8 +19,8 @@
         }
 
         .card {
-            width: 650px;
-            padding: 50px;
+            width: 480px; /* SMALLER */
+            padding: 30px; /* SMALLER */
             border-radius: 16px;
             background: rgba(255,255,255,0.08);
             backdrop-filter: blur(12px);
@@ -31,34 +31,31 @@
         h2 {
             text-align: center;
             color: #00e5ff;
-            margin-bottom: 25px;
-            font-size: 30px;
+            margin-bottom: 15px; /* SMALLER */
+            font-size: 26px; /* SMALLER */
         }
 
-        /* MASTER CLASS — all boxes identical */
         .mfa-box {
             width: 100%;
-            padding: 20px;
-            border-radius: 12px;
+            padding: 16px; /* SMALLER */
+            border-radius: 10px;
             background: rgba(255,255,255,0.15);
-            font-size: 22px;
+            font-size: 18px; /* SMALLER */
             text-align: center;
-            letter-spacing: 3px;
-            margin-bottom: 25px;
+            letter-spacing: 2px;
+            margin-bottom: 18px; /* SMALLER */
             color: #e0e0e0;
             border: none;
             display: block;
-            box-sizing: border-box; /* THE FIX */
+            box-sizing: border-box;
         }
 
-        /* Secret box stays on one line */
         .secret-box {
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
         }
 
-        /* Button uses same box class + color */
         .btn {
             background: #00e5ff;
             color: #000;
@@ -71,6 +68,24 @@
             background: #00ffff;
             box-shadow: 0 0 12px rgba(0,255,255,0.6);
         }
+
+        .qr-container {
+            text-align: center;
+            margin-bottom: 20px; /* SMALLER */
+        }
+
+        .qr-container img {
+            width: 160px; /* SMALLER */
+            height: 160px; /* SMALLER */
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,255,255,0.4);
+        }
+
+        p {
+            font-size: 15px; /* SMALLER */
+            text-align: center;
+            margin-bottom: 10px;
+        }
     </style>
 </head>
 
@@ -79,16 +94,22 @@
 <div class="card">
     <h2>MFA Setup</h2>
 
-    <p>Scan this secret in your authenticator app:</p>
+    <p>Scan this QR code using your Authenticator app:</p>
 
-    <!-- SECRET BOX -->
+    <div class="qr-container">
+        <img src="data:image/png;base64,{{ qr_image }}" alt="QR Code">
+    </div>
+
+    <p>Or enter this secret manually:</p>
+
     <div class="mfa-box secret-box">{{ secret }}</div>
 
-    <form method="POST">
-        <!-- 6 DIGIT INPUT -->
-        <input class="mfa-box" type="text" name="code" placeholder="Enter 6-digit code" required>
+    {% if error %}
+        <p style="color:#ff6b6b; font-weight:bold;">{{ error }}</p>
+    {% endif %}
 
-        <!-- VERIFY BUTTON (NOW EXACT SAME LENGTH) -->
+    <form method="POST">
+        <input class="mfa-box" type="text" name="code" placeholder="Enter 6-digit code" required>
         <button class="mfa-box btn" type="submit">Verify</button>
     </form>
 </div>

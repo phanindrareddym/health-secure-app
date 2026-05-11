@@ -127,6 +127,10 @@
     <form method="POST" action="/login" id="normalLoginForm">
         <input class="login-box-item" type="text" name="username" placeholder="Enter Username" required>
         <input class="login-box-item" type="password" name="password" placeholder="Enter Password" required>
+
+        <!-- ⭐ Hidden field for device info -->
+        <input type="hidden" name="device_info" id="device_info">
+
         <button class="login-box-item btn-login" type="submit">Login</button>
     </form>
 
@@ -147,6 +151,7 @@
     </div>
 </div>
 
+<!-- ⭐ GPS Script -->
 <script>
 let gpsReady = false;
 let gpsPromise = null;
@@ -188,25 +193,46 @@ function sendGPS() {
 sendGPS();
 </script>
 
+<!-- ⭐ Device Info Collection -->
+<script>
+function collectDeviceInfo() {
+    return {
+        ua: navigator.userAgent,
+        platform: navigator.platform,
+        timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+        screen: `${screen.width}x${screen.height}`,
+        language: navigator.language,
+        cores: navigator.hardwareConcurrency || "Unknown"
+    };
+}
+</script>
+
+<!-- ⭐ Normal Login -->
+<script>
+document.getElementById("normalLoginForm").addEventListener("submit", async function (e) {
+    e.preventDefault();
+    await sendGPS();
+
+    document.getElementById("device_info").value = JSON.stringify(collectDeviceInfo());
+    this.submit();
+});
+</script>
+
+<!-- ⭐ Azure Login -->
 <script>
 document.getElementById("azureLoginBtn").addEventListener("click", async function () {
+    sessionStorage.setItem("device_info", JSON.stringify(collectDeviceInfo()));
     await sendGPS();
     window.location.href = "/auth/azure/login";
 });
 </script>
 
+<!-- ⭐ Auth0 Login -->
 <script>
 document.getElementById("auth0LoginBtn").addEventListener("click", async function () {
+    sessionStorage.setItem("device_info", JSON.stringify(collectDeviceInfo()));
     await sendGPS();
     window.location.href = "/auth/login";
-});
-</script>
-
-<script>
-document.getElementById("normalLoginForm").addEventListener("submit", async function (e) {
-    e.preventDefault();
-    await sendGPS();
-    this.submit();
 });
 </script>
 

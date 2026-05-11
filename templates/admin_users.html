@@ -267,9 +267,9 @@
                                 <td>{{ h.get("ip") }}</td>
                                 <td>{{ h.get("location") }}</td>
                                 <td>{{ h.get("provider") }}</td>
-                                <td>{{ h.get("device", {}).get("device_type", "") }}</td>
-                                <td>{{ h.get("device", {}).get("os", "") }}</td>
-                                <td>{{ h.get("device", {}).get("browser", "") }}</td>
+                                <td>{{ h.get("device", "Unknown") }}</td>
+                                <td>{{ h.get("os", "Unknown") }}</td>
+                                <td>{{ h.get("browser", "Unknown") }}</td>
                             </tr>
                             {% endfor %}
                         </table>
